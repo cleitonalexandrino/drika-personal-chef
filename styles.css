@@ -1,0 +1,124 @@
+/* Estilos Personalizados - Drika Personal Chef */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --color-olive-dark: #233420;
+  --color-olive-main: #384F32;
+  --color-olive-light: #52704B;
+  --color-sage: #8EA784;
+  --color-terracotta: #BD6645;
+  --color-terracotta-hover: #A65536;
+  --color-gold: #CFA052;
+  --color-cream-bg: #FAF8F4;
+  --color-cream-card: #FFFFFF;
+  --color-border: #E8E2D6;
+  --color-text-main: #1D261C;
+  --color-text-muted: #5C695A;
+}
+
+* {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-cream-bg);
+  color: var(--color-text-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-serif-title {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Scrollbar estilizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F1ECE3;
+}
+::-webkit-scrollbar-thumb {
+  background: #9BB093;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52704B;
+}
+
+/* Efeito Glassmorphism para Navbar */
+.glass-nav {
+  background: rgba(250, 248, 244, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(232, 226, 214, 0.8);
+}
+
+/* Transições suaves de hover */
+.card-hover-effect {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover-effect:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -8px rgba(35, 52, 32, 0.12);
+}
+
+/* Botão Flutuante do Carrinho */
+.cart-floating-btn {
+  box-shadow: 0 10px 25px -3px rgba(189, 102, 69, 0.4), 0 4px 6px -2px rgba(189, 102, 69, 0.2);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.cart-floating-btn:hover {
+  transform: scale(1.06);
+}
+
+/* Badge Pulsante */
+@keyframes pulse-subtle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.9; }
+}
+.pulse-badge {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+/* Backdrop do Drawer do Carrinho */
+.cart-backdrop {
+  background: rgba(29, 38, 28, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* Estilo para imagem da chef com moldura orgânica */
+.chef-hero-img-wrap {
+  position: relative;
+}
+.chef-hero-img-wrap::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: 12px;
+  bottom: 12px;
+  border: 2px solid var(--color-gold);
+  border-radius: 24px;
+  z-index: 0;
+}
+
+/* Tag PANC com gradiente verde botânico */
+.tag-panc {
+  background: linear-gradient(135deg, #44613B 0%, #2A4023 100%);
+  color: #FFFFFF;
+}
+
+/* Form inputs estilizados */
+.custom-input {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E0D9CB;
+  transition: all 0.2s ease;
+}
+.custom-input:focus {
+  border-color: var(--color-olive-main);
+  box-shadow: 0 0 0 3px rgba(56, 79, 50, 0.15);
+  outline: none;
+}

@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drika Personal Chef | Cardápio Low Carb, Tradicional & Fit • Marmitas Saudáveis</title>
+  <meta name="description" content="Marmitas saudáveis, Cardápio Low Carb e Tradicional & Fit por R$ 24,90. Direto da horta para sua mesa com a Chef Adriana Corrêa. Peça pelo WhatsApp (11) 98433-7478." />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            earth: {
+              dark: '#233420',
+              olive: '#384F32',
+              light: '#52704B',
+              sage: '#8EA784',
+              terracotta: '#BD6645',
+              terracottaHover: '#A65536',
+              gold: '#CFA052',
+              cream: '#FAF8F4',
+              sand: '#E8E2D6',
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Estilos Personalizados -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-earth-cream text-stone-900 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- BARRA DE GESTÃO DA CHEF (VISÍVEL SOMENTE QUANDO AUTENTICADA) -->
+  <div id="admin-logged-bar" class="hidden bg-emerald-900 text-white text-xs py-2 px-4 border-b border-emerald-700 z-50 sticky top-0 shadow-md">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 pulse-badge"></span>
+        <span class="font-bold">Modo de Gestão Ativo:</span>
+        <span class="text-emerald-200">Você está conectada como Chef Drika</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button 
+          onclick="window.drikaApp.openAdminModal('menu-images')" 
+          class="px-3 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 font-semibold transition flex items-center gap-1.5"
+        >
+          <i data-lucide="camera" class="w-3.5 h-3.5 text-amber-300"></i>
+          <span>Abrir Painel de Gestão</span>
+        </button>
+        <button 
+          onclick="window.drikaApp.logout()" 
+          class="px-2.5 py-1 rounded-lg bg-red-800/80 hover:bg-red-700 text-stone-200 transition text-[11px]"
+          title="Encerrar sessão de administração"
+        >
+          Sair
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP BAR / ANNOUNCEMENT LIMPA PARA CLIENTES -->
+  <aside aria-label="Avisos e Contato Rápido" class="bg-earth-dark text-stone-200 text-xs py-2 px-4 flex items-center justify-between font-medium tracking-wide">
+    <div class="flex items-center gap-2 mx-auto sm:mx-0">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 pulse-badge"></span>
+      <span>🌿 Marmitas Low Carb e Tradicional & Fit • R$ 24,90 • Entregas em São Paulo & Região</span>
+    </div>
+    
+    <div class="hidden sm:flex items-center gap-4">
+      <a href="https://instagram.com/DrikaPersonalChef" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-earth-gold hover:underline">
+        <i data-lucide="instagram" class="w-3.5 h-3.5"></i> @DrikaPersonalChef
+      </a>
+      <a href="https://wa.me/5511984337478" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-emerald-300 hover:underline">
+        <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> (11) 98433-7478
+      </a>
+    </div>
+  </aside>
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 min-h-[5.25rem] flex items-center justify-between">
+      
+      <!-- LOGO & BRAND NAME -->
+      <a href="#" class="flex flex-col items-center justify-center text-center group py-0.5">
+        <img 
+          src="assets/logo.jpg" 
+          alt="Logotipo Drika Personal Chef" 
+          class="site-logo-img w-11 h-11 rounded-full object-cover border-2 border-earth-gold shadow-xs group-hover:scale-105 transition-transform"
+        />
+        <span class="block font-serif text-sm sm:text-base font-bold tracking-tight text-earth-dark leading-tight mt-1">
+          Drika Personal Chef
+        </span>
+      </a>
+
+      <!-- DESKTOP NAVIGATION LINKS -->
+      <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-stone-700">
+        <a href="#cardapio" class="hover:text-earth-olive transition py-1">Cardápio Oficial</a>
+        <a href="#combos" class="hover:text-earth-olive transition py-1">Kits & Promoções</a>
+        <a href="#sobre" class="hover:text-earth-olive transition py-1">Quem Sou Eu</a>
+        <a href="#horta-pancs" class="hover:text-earth-olive transition py-1">Horta & PANCs</a>
+        <a href="#midia" class="hover:text-earth-olive transition py-1">Na Mídia</a>
+        <a href="#depoimentos" class="hover:text-earth-olive transition py-1">Depoimentos</a>
+        <a href="#eventos" class="hover:text-earth-olive transition py-1">Eventos</a>
+      </nav>
+
+      <!-- CART & ACTION BUTTONS -->
+      <div class="flex items-center gap-3">
+        
+        <!-- BOTAO DO CARRINHO -->
+        <button 
+          class="open-cart-btn relative p-2.5 rounded-xl bg-white border border-earth-sand text-earth-dark hover:bg-earth-cream transition flex items-center justify-center shadow-sm"
+          title="Abrir Carrinho de Pedidos"
+          aria-label="Abrir Carrinho de Pedidos"
+        >
+          <i data-lucide="shopping-bag" class="w-5 h-5 text-earth-olive"></i>
+          <span class="cart-count-badge hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-earth-terracotta text-white text-[11px] font-bold rounded-full items-center justify-center shadow">
+            0
+          </span>
+        </button>
+
+        <a 
+          href="#cardapio" 
+          class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-earth-olive hover:bg-earth-dark text-white shadow-sm transition active:scale-95"
+        >
+          <i data-lucide="utensils" class="w-4 h-4"></i>
+          <span>Fazer Pedido</span>
+        </a>
+
+        <!-- MOBILE MENU BUTTON -->
+        <button 
+          id="mobile-menu-toggle"
+          class="md:hidden p-2 rounded-xl text-stone-700 hover:bg-stone-100 transition"
+          aria-label="Menu Mobile"
+        >
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- MOBILE MENU DROPDOWN -->
+    <div id="mobile-menu-dropdown" class="hidden md:hidden border-t border-earth-sand bg-white/95 px-5 py-4 space-y-3 shadow-lg">
+      <a href="#cardapio" class="block py-2 text-stone-800 font-medium hover:text-earth-olive">🍱 Cardápio Oficial (R$ 24,90)</a>
+      <a href="#combos" class="block py-2 text-stone-800 font-medium hover:text-earth-olive">🎁 Kits Promocionais</a>
+      <a href="#sobre" class="block py-2 text-stone-800 font-medium hover:text-earth-olive">👩‍🍳 Quem Sou Eu</a>
+      <a href="#horta-pancs" class="block py-2 text-stone-800 font-medium hover:text-earth-olive">🌱 Horta & PANCs</a>
+      <a href="#midia" class="block py-2 text-stone-800 font-medium hover:text-earth-olive">📺 Na Mídia</a>
+      <a href="#depoimentos" class="block py-2 text-stone-800 font-medium hover:text-earth-olive">⭐ Depoimentos</a>
+      <a href="#eventos" class="block py-2 text-stone-800 font-medium hover:text-earth-olive">🎉 Eventos & Personal Chef</a>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="relative py-12 md:py-20 overflow-hidden bg-gradient-to-b from-white via-earth-cream to-earth-cream border-b border-earth-sand">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- HERO TEXT CONTENT -->
+        <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+          
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-earth-olive text-xs font-semibold">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-earth-gold"></i>
+            <span>Drika Personal Chef • Cardápio Oficial por R$ 24,90 a Marmita</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl lg:text-6xl font-bold font-serif-title text-earth-dark leading-[1.15]">
+            Comida saudável de verdade, <span class="text-earth-terracotta italic font-normal">amor e sabor</span> para sua rotina.
+          </h1>
+
+          <p class="text-base sm:text-lg text-[#4A5747] max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+            Conheça nossos <strong>Cardápios Low Carb</strong> e <strong>Tradicional & Fit</strong> com 18 opções deliciosas preparadas com temperos naturais e carinho da Chef Adriana Corrêa. Peça por unidade ou garanta nossos Kits Semanais com desconto!
+          </p>
+
+          <!-- HERO ACTION BUTTONS -->
+          <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+            <a 
+              href="#cardapio" 
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl text-base font-bold bg-earth-olive hover:bg-earth-dark text-white shadow-md hover:shadow-lg transition active:scale-95"
+            >
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+              <span>Ver Cardápio & Fazer Pedido</span>
+            </a>
+            
+            <button 
+              onclick="window.drikaApp.openFlyerModal('lowcarb')" 
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-base font-semibold bg-white border border-earth-sand text-earth-dark hover:bg-stone-50 shadow-sm transition"
+            >
+              <i data-lucide="file-text" class="w-5 h-5 text-earth-terracotta"></i>
+              <span>Ver Panfletos Oficiais</span>
+            </button>
+          </div>
+
+          <!-- HIGHLIGHT PILLS -->
+          <div class="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+            <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/70 border border-earth-sand/80 shadow-xs">
+              <div class="w-9 h-9 rounded-xl bg-emerald-100 text-earth-olive flex items-center justify-center flex-shrink-0">
+                <i data-lucide="tag" class="w-5 h-5"></i>
+              </div>
+              <span class="text-xs font-semibold text-stone-800">R$ 24,90 a Marmita (Preço Oficial)</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/70 border border-earth-sand/80 shadow-xs">
+              <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="percent" class="w-5 h-5"></i>
+              </div>
+              <span class="text-xs font-semibold text-stone-800">Desconto em Kits Semanais</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/70 border border-earth-sand/80 shadow-xs">
+              <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="qr-code" class="w-5 h-5"></i>
+              </div>
+              <span class="text-xs font-semibold text-stone-800">Pagamento Prático via Pix</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- HERO IMAGES & CHEF CARD -->
+        <div class="lg:col-span-5 relative">
+          <div class="relative mx-auto max-w-md">
+            
+            <!-- Imagem Principal da Chef / Logo -->
+            <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white relative z-10 bg-white aspect-[4/5] flex items-center justify-center">
+              <img 
+                id="hero-chef-img"
+                src="assets/logo.jpg" 
+                alt="Chef Adriana Corrêa - Drika Personal Chef" 
+                class="w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent"></div>
+              <div class="absolute bottom-5 left-5 right-5 text-white">
+                <span class="text-xs uppercase font-bold text-amber-300 tracking-wider">Cozinha Afetiva & Natural</span>
+                <p class="font-serif text-lg font-bold">"Cuidar de si começa pelo que come."</p>
+                <p class="text-xs text-stone-300 font-light">— Chef Adriana Corrêa (Drika)</p>
+              </div>
+            </div>
+
+            <!-- Card Flutuante 1: Preço do Cardápio -->
+            <div class="absolute -bottom-6 -left-6 z-20 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-earth-sand hidden sm:flex items-center gap-3 max-w-xs card-hover-effect">
+              <div class="w-12 h-12 rounded-xl bg-emerald-100 text-earth-olive flex items-center justify-center font-bold text-sm">
+                R$ 24,90
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-emerald-700 uppercase">Preço Especial</span>
+                <h4 class="text-xs font-bold text-stone-900">Cardápio de Setembro</h4>
+                <p class="text-[10px] text-stone-500">Marmitas Low Carb & Fit</p>
+              </div>
+            </div>
+
+            <!-- Card Flutuante 2: WhatsApp Oficial -->
+            <div class="absolute -top-4 -right-4 z-20 bg-emerald-700 text-white p-3 rounded-2xl shadow-xl hidden sm:flex items-center gap-2.5">
+              <i data-lucide="message-circle" class="w-5 h-5 text-amber-300"></i>
+              <div class="text-left">
+                <p class="text-[10px] font-medium text-emerald-200">Pedidos Diretos</p>
+                <p class="text-xs font-bold">(11) 98433-7478</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CARDÁPIO DIGITAL & SISTEMA DE PEDIDOS -->
+  <section id="cardapio" class="py-16 md:py-24 bg-[#F5F2EB] border-b border-earth-sand">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-10">
+        <span class="text-xs font-bold uppercase tracking-widest text-earth-terracotta block mb-2">
+          Cardápio Oficial de Marmitas • R$ 24,90 Cada
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold font-serif-title text-earth-dark">
+          Escolha Suas Refeições & Monte seu Pedido
+        </h2>
+        <p class="mt-2 text-[#5C695A] text-sm sm:text-base">
+          Pratos preparados com ingredientes frescos selecionados. Escolha os itens avulsos ou aproveite os combos com descontos automáticos no carrinho!
+        </p>
+      </div>
+
+      <!-- BANNER DE COMBOS PROMOCIONAIS & PANFLETOS -->
+      <div id="combos" class="mb-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-earth-dark via-earth-olive to-earth-olive text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+          <i data-lucide="utensils" class="w-64 h-64 text-white"></i>
+        </div>
+        <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div class="space-y-2 text-center lg:text-left max-w-xl">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-earth-gold/20 text-earth-gold border border-earth-gold/30 text-xs font-bold uppercase tracking-wider">
+              ⭐ Economia & Praticidade para a sua Semana
+            </span>
+            <h3 class="text-2xl sm:text-3xl font-bold font-serif-title text-white">
+              Kits Semanais com Desconto Progressivo
+            </h3>
+            <p class="text-xs sm:text-sm text-emerald-100 leading-relaxed">
+              Marmitas artesanais ultracongeladas por <strong>R$ 24,90 a unidade</strong>. Adicione qualquer marmita ao seu carrinho e o desconto semanal é calculado automaticamente:
+            </p>
+            <div class="flex flex-wrap gap-2 pt-1 justify-center lg:justify-start">
+              <span class="px-3 py-1 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 text-xs font-bold text-white">
+                📦 Kit 5 Marmitas: <strong>R$ 119,90</strong>
+              </span>
+              <span class="px-3 py-1 rounded-xl bg-amber-400/20 backdrop-blur-sm border border-amber-300/40 text-xs font-bold text-amber-200">
+                🔥 Kit 10 Marmitas: <strong>R$ 229,90</strong> (Mais Popular)
+              </span>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row lg:flex-col gap-2.5 w-full lg:w-auto">
+            <button 
+              onclick="window.drikaApp.addComboShortcut('kit-10-misto')" 
+              class="px-5 py-3 rounded-2xl bg-earth-gold hover:bg-amber-400 text-stone-900 font-extrabold text-xs sm:text-sm transition shadow-lg flex items-center justify-center gap-2 active:scale-95"
+            >
+              <i data-lucide="zap" class="w-4 h-4 text-stone-900"></i>
+              <span>Adicionar Kit 10 Misto em 1 Clique</span>
+            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button 
+                onclick="window.drikaApp.openFlyerModal('lowcarb')" 
+                class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
+                title="Ver panfleto Low Carb oficial"
+              >
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-earth-gold"></i>
+                <span>Flyer Low Carb</span>
+              </button>
+              <button 
+                onclick="window.drikaApp.openFlyerModal('tradicional_fit')" 
+                class="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5"
+                title="Ver panfleto Tradicional & Fit oficial"
+              >
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-earth-gold"></i>
+                <span>Flyer Fit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BARRA DE BUSCA E FILTROS -->
+      <div class="space-y-4 mb-10">
+        
+        <!-- Input de Busca -->
+        <div class="max-w-md mx-auto relative">
+          <i data-lucide="search" class="w-5 h-5 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+          <input 
+            type="text" 
+            id="menu-search-input"
+            placeholder="Buscar por prato (ex: lasanha, sobrecoxa, pernil, inhame)..." 
+            class="w-full pl-11 pr-4 py-3 rounded-2xl custom-input text-sm text-stone-800 placeholder-stone-400 shadow-sm"
+          />
+        </div>
+
+        <!-- Categorias Pills com destaque para Low Carb e Tradicional & Fit -->
+        <div class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <button 
+            data-category="all" 
+            class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#384F32] text-white shadow-md transition whitespace-nowrap active:scale-95"
+          >
+            🌿 Todos os Pratos
+          </button>
+          <button 
+            data-category="lowcarb" 
+            class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-[#384F32] border border-[#DCD5C8] hover:bg-[#F3EFEA] transition whitespace-nowrap active:scale-95"
+          >
+            🥑 Cardápio Low Carb (R$ 24,90)
+          </button>
+          <button 
+            data-category="tradicional_fit" 
+            class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-[#384F32] border border-[#DCD5C8] hover:bg-[#F3EFEA] transition whitespace-nowrap active:scale-95"
+          >
+            🍱 Tradicional & Fit (R$ 24,90)
+          </button>
+          <button 
+            data-category="produtos" 
+            class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-[#384F32] border border-[#DCD5C8] hover:bg-[#F3EFEA] transition whitespace-nowrap active:scale-95"
+          >
+            🍯 Produtos da Horta
+          </button>
+          <button 
+            data-category="personalchef" 
+            class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-white text-[#384F32] border border-[#DCD5C8] hover:bg-[#F3EFEA] transition whitespace-nowrap active:scale-95"
+          >
+            👩‍🍳 Personal Chef & Eventos
+          </button>
+        </div>
+
+      </div>
+
+      <!-- GRID DO CARDÁPIO (RENDERIZADO DINAMICAMENTE PELO JS) -->
+      <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Itens injetados via JavaScript -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- QUEM SOU EU / CHEF ADRIANA CORREA -->
+  <section id="sobre" class="py-16 md:py-24 bg-white border-b border-earth-sand overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <!-- FOTO COM MOLDURA ARTESANAL -->
+        <div class="lg:col-span-5 relative">
+          <div class="chef-hero-img-wrap max-w-md mx-auto relative">
+            <div class="rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-stone-100 aspect-[4/5]">
+              <img 
+                id="about-chef-img"
+                src="assets/media_1790480919649.png" 
+                alt="Chef Adriana Corrêa - Drika Personal Chef" 
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- TEXTO BIOGRAFIA & PROPÓSITO -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center gap-2 text-earth-terracotta text-xs font-bold uppercase tracking-wider">
+            <i data-lucide="heart" class="w-4 h-4 fill-earth-terracotta"></i>
+            <span>História, Propósito & Cozinha com Afeto</span>
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl font-bold font-serif-title text-earth-dark leading-tight">
+            "Cuidar de si começa pelo que come."
+          </h2>
+
+          <div class="space-y-4 text-stone-600 text-sm sm:text-base leading-relaxed">
+            <p>
+              Olá! Sou a <strong>Chef Adriana Corrêa (Drika)</strong>, cozinheira e Personal Chef apaixonada pela gastronomia saudável, agricultura urbana e cozinha afetiva.
+            </p>
+            <p>
+              Minhas marmitas nasceram da necessidade real de alimentar bem quem tem uma rotina intensa mas não abre mão da saúde e do sabor caseiro. Cada refeição do nosso <strong>Cardápio Low Carb</strong> e <strong>Tradicional & Fit</strong> é balanceada, temperada apenas com ervas naturais e preparada com carinho de mãe.
+            </p>
+            <p>
+              Além das refeições congeladas por R$ 24,90, produzo geleias artesanais de frutas colhidas na horta, compotas exclusivas de jiló e realizo serviços completos de Personal Chef em domicílio para almoços, jantares e eventos particulares.
+            </p>
+          </div>
+
+          <!-- CITAÇÃO DESTAQUE -->
+          <div class="p-5 rounded-2xl bg-earth-cream border-l-4 border-earth-gold space-y-1">
+            <p class="font-serif italic text-earth-dark text-base">
+              "Amor, praticidade e saúde em cada refeição direto da horta para sua mesa."
+            </p>
+            <span class="text-xs font-bold text-earth-olive block">— Chef Adriana Corrêa</span>
+          </div>
+
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a 
+              href="https://instagram.com/DrikaPersonalChef" 
+              target="_blank" 
+              rel="noopener"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white font-semibold text-sm shadow hover:opacity-95 transition"
+            >
+              <i data-lucide="instagram" class="w-4 h-4"></i>
+              <span>Siga no Instagram (@DrikaPersonalChef)</span>
+            </a>
+            <a 
+              href="https://wa.me/5511984337478" 
+              target="_blank" 
+              rel="noopener"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-sm shadow hover:bg-emerald-700 transition"
+            >
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Falar no WhatsApp: (11) 98433-7478</span>
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HORTA URBANA & PANCs -->
+  <section id="horta-pancs" class="py-16 md:py-24 bg-gradient-to-b from-earth-cream to-white border-b border-earth-sand">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-widest text-earth-olive block mb-2">
+          Agricultura Urbana & Sustentabilidade
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold font-serif-title text-earth-dark">
+          O Poder das PANCs na Cozinha da Chef Drika
+        </h2>
+        <p class="mt-3 text-stone-600 text-sm sm:text-base">
+          Plantas Alimentícias Não Convencionais cultivadas com carinho na horta urbana, trazendo nutrientes vivos, frescor e sabor inigualável às receitas.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="bg-white p-7 rounded-3xl border border-earth-sand shadow-sm space-y-4 card-hover-effect">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-earth-olive flex items-center justify-center">
+            <i data-lucide="sprout" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-xl font-bold font-serif-title text-earth-dark">O que são PANCs?</h3>
+          <p class="text-sm text-stone-600 leading-relaxed">
+            Espécies vegetais com alto valor nutritivo como Ora-pro-nóbis, Taioba, Beldroega e flores comestíveis. Superalimentos ricos em proteínas, ferro e antioxidantes.
+          </p>
+        </div>
+
+        <div class="bg-white p-7 rounded-3xl border border-earth-sand shadow-sm space-y-4 card-hover-effect">
+          <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center">
+            <i data-lucide="sun" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-xl font-bold font-serif-title text-earth-dark">Cultivo Agroecológico</h3>
+          <p class="text-sm text-stone-600 leading-relaxed">
+            Parceria e manejo sustentável na agricultura urbana, sem agrotóxicos ou químicos pesados, garantindo alimentos que respeitam os ciclos da terra.
+          </p>
+        </div>
+
+        <div class="bg-white p-7 rounded-3xl border border-earth-sand shadow-sm space-y-4 card-hover-effect">
+          <div class="w-14 h-14 rounded-2xl bg-orange-100 text-earth-terracotta flex items-center justify-center">
+            <i data-lucide="utensils-crossed" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-xl font-bold font-serif-title text-earth-dark">Do Campo Direto ao Prato</h3>
+          <p class="text-sm text-stone-600 leading-relaxed">
+            Colheita consciente para criar temperos aromáticos, molhos artesanais e caldos nutritivos que você só encontra nas criações da Chef Drika.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- NA MÍDIA & RECONHECIMENTO -->
+  <section id="midia" class="py-16 md:py-24 bg-[#F7F4EE] border-b border-earth-sand">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-widest text-earth-terracotta block mb-2">
+          Autoridade & Reconhecimento
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold font-serif-title text-earth-dark">
+          Chef Drika na Mídia & Entrevistas
+        </h2>
+        <p class="mt-3 text-stone-600 text-sm sm:text-base">
+          Presença em programas de TV, podcasts e reportagens compartilhando a paixão pela culinária saudável e funcional.
+        </p>
+      </div>
+
+      <!-- GRID DE MÍDIA RENDERIZADO DINAMICAMENTE -->
+      <div id="media-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 max-w-4xl mx-auto gap-6">
+        <!-- Renderizado pelo app.js -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DEPOIMENTOS DE CLIENTES -->
+  <section id="depoimentos" class="py-16 md:py-24 bg-white border-b border-earth-sand">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="text-xs font-bold uppercase tracking-widest text-earth-olive block mb-2">
+          Avaliações de Clientes
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-bold font-serif-title text-earth-dark">
+          O que dizem sobre nossas refeições
+        </h2>
+        <p class="mt-3 text-stone-600 text-sm sm:text-base">
+          Depoimentos de quem transformou a alimentação com praticidade e sabor todos os dias.
+        </p>
+      </div>
+
+      <!-- GRID DE DEPOIMENTOS -->
+      <div id="reviews-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Renderizado pelo app.js -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- EVENTOS & PERSONAL CHEF (FORMULÁRIO DE BRIEFING) -->
+  <section id="eventos" class="py-16 md:py-24 bg-gradient-to-b from-earth-cream to-[#ECE6D9] border-b border-earth-sand">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        <div class="lg:col-span-6 space-y-6">
+          <span class="text-xs font-bold uppercase tracking-widest text-earth-terracotta block">
+            Experiências Gastronômicas Exclusivas
+          </span>
+          <h2 class="text-3xl sm:text-4xl font-bold font-serif-title text-earth-dark leading-tight">
+            Leve a Chef Drika para Cozinhar no seu Evento ou Residência
+          </h2>
+          <p class="text-stone-600 text-sm sm:text-base leading-relaxed">
+            Almoços intimistas, jantares harmonizados, aniversários e comemorações corporativas. Cuidamos desde a compra dos ingredientes nobres até o serviço à mesa e a cozinha impecável.
+          </p>
+
+          <ul class="space-y-3 text-sm text-stone-700">
+            <li class="flex items-center gap-3">
+              <i data-lucide="check-circle-2" class="w-5 h-5 text-earth-olive"></i>
+              <span>Menus sob medida com opções Low Carb, Fit, Veganas e Tradicionais</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i data-lucide="check-circle-2" class="w-5 h-5 text-earth-olive"></i>
+              <span>Ingredientes frescos selecionados e colhidos na horta urbana</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i data-lucide="check-circle-2" class="w-5 h-5 text-earth-olive"></i>
+              <span>Serviço cuidadoso e atencioso para você relaxar com seus convidados</span>
+            </li>
+          </ul>
+
+          <div class="p-4 rounded-2xl bg-white/80 border border-earth-sand flex items-center gap-4">
+            <div class="w-14 h-14 rounded-xl bg-amber-100 text-earth-dark flex items-center justify-center font-bold">
+              <i data-lucide="calendar" class="w-6 h-6 text-earth-olive"></i>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-earth-dark">Consultoria de Cardápio Semanal Sob Medida</p>
+              <p class="text-xs text-stone-500">Agende sua avaliação nutricional e culinária com a Chef</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORMULÁRIO RÁPIDO DE ORÇAMENTO -->
+        <div class="lg:col-span-6">
+          <div class="bg-white p-8 rounded-3xl border border-earth-sand shadow-lg">
+            <h3 class="text-2xl font-bold font-serif-title text-earth-dark mb-2">Solicitar Orçamento de Evento</h3>
+            <p class="text-xs text-stone-500 mb-6">Preencha os dados e receba uma proposta detalhada direto no seu WhatsApp.</p>
+
+            <form id="event-quote-form" class="space-y-4">
+              <div>
+                <label for="event-name" class="block text-xs font-bold text-stone-700 mb-1">Seu Nome Completo *</label>
+                <input type="text" id="event-name" required placeholder="Ex: Mariana Silveira" class="w-full p-3 text-sm rounded-xl custom-input" />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="event-phone" class="block text-xs font-bold text-stone-700 mb-1">WhatsApp de Contato *</label>
+                  <input type="tel" id="event-phone" required placeholder="(11) 98433-7478" class="w-full p-3 text-sm rounded-xl custom-input" />
+                </div>
+                <div>
+                  <label for="event-type" class="block text-xs font-bold text-stone-700 mb-1">Tipo de Evento</label>
+                  <select id="event-type" class="w-full p-3 text-sm rounded-xl custom-input">
+                    <option value="Jantar Intimista / Aniversário">Jantar Intimista / Aniversário</option>
+                    <option value="Ceia de Festas / Fim de Ano">Ceia de Festas / Fim de Ano</option>
+                    <option value="Evento Corporativo Saudável">Evento Corporativo Saudável</option>
+                    <option value="Grazing Table / Mesa de Entradas">Grazing Table / Mesa de Entradas</option>
+                    <option value="Consultoria de Marmitas Semanais">Consultoria de Marmitas Semanais</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label for="event-guests" class="block text-xs font-bold text-stone-700 mb-1">Nº Previsto de Pessoas</label>
+                  <input type="text" id="event-guests" placeholder="Ex: 8 a 12 pessoas" class="w-full p-3 text-sm rounded-xl custom-input" />
+                </div>
+                <div>
+                  <label for="event-date" class="block text-xs font-bold text-stone-700 mb-1">Data Desejada</label>
+                  <input type="date" id="event-date" class="w-full p-3 text-sm rounded-xl custom-input" />
+                </div>
+              </div>
+
+              <div>
+                <label for="event-details" class="block text-xs font-bold text-stone-700 mb-1">Detalhes, Restrições ou Ideias</label>
+                <textarea id="event-details" rows="3" placeholder="Ex: Gostaria de opções vegetarianas, sem lactose ou com foco em Low Carb..." class="w-full p-3 text-sm rounded-xl custom-input"></textarea>
+              </div>
+
+              <button 
+                type="submit" 
+                class="w-full py-3.5 px-6 rounded-xl font-bold text-sm bg-earth-olive hover:bg-earth-dark text-white shadow-md transition flex items-center justify-center gap-2 active:scale-98"
+              >
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Enviar Solicitação para o WhatsApp</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="contato" class="bg-earth-dark text-stone-300 pt-16 pb-8 border-t border-[#31452D]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-stone-700/60">
+        
+        <!-- COLUNA 1: MARCA -->
+        <div class="space-y-4 md:col-span-1">
+          <div class="flex items-center gap-3">
+            <img src="assets/logo.jpg" alt="Drika Personal Chef" class="site-logo-img w-12 h-12 rounded-full object-cover border-2 border-earth-gold" />
+            <div>
+              <span class="font-serif text-xl font-bold text-white block">Drika Personal Chef</span>
+              <span class="text-xs text-earth-gold font-medium">Chef Adriana Corrêa</span>
+            </div>
+          </div>
+          <p class="text-xs text-stone-400 leading-relaxed">
+            Amor, praticidade e saúde em cada refeição direto da horta para sua mesa. Marmitas Low Carb e Tradicional & Fit por R$ 24,90.
+          </p>
+        </div>
+
+        <!-- COLUNA 2: LINKS RÁPIDOS -->
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Navegação</h4>
+          <ul class="space-y-2 text-xs text-stone-400">
+            <li><a href="#cardapio" class="hover:text-white transition">Cardápio Oficial (R$ 24,90)</a></li>
+            <li><a href="#combos" class="hover:text-white transition">Kits & Promoções Semanais</a></li>
+            <li><a href="#sobre" class="hover:text-white transition">Quem Sou Eu</a></li>
+            <li><a href="#horta-pancs" class="hover:text-white transition">Horta Urbana & PANCs</a></li>
+            <li><a href="#midia" class="hover:text-white transition">Na Mídia</a></li>
+            <li><a href="#depoimentos" class="hover:text-white transition">Depoimentos</a></li>
+            <li><a href="#eventos" class="hover:text-white transition">Eventos & Personal Chef</a></li>
+          </ul>
+        </div>
+
+        <!-- COLUNA 3: ESPECIALIDADES -->
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Especialidades</h4>
+          <ul class="space-y-2 text-xs text-stone-400">
+            <li>• Marmitas Low Carb Artesanais</li>
+            <li>• Marmitas Tradicional & Fit</li>
+            <li>• Brasileirinhos Gourmet & Confort Food</li>
+            <li>• Geleias & Compotas da Horta Urbana</li>
+            <li>• Personal Chef & Jantares em Domicílio</li>
+          </ul>
+        </div>
+
+        <!-- COLUNA 4: CONTATO DIRETO -->
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Atendimento Oficial</h4>
+          <ul class="space-y-3 text-xs text-stone-300">
+            <li class="flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-4 h-4 text-earth-gold flex-shrink-0"></i>
+              <span>São Paulo - SP & Região Metropolitana</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <i data-lucide="instagram" class="w-4 h-4 text-earth-gold flex-shrink-0"></i>
+              <a href="https://instagram.com/DrikaPersonalChef" target="_blank" rel="noopener" class="hover:text-white underline">@DrikaPersonalChef</a>
+            </li>
+            <li class="flex items-center gap-2">
+              <i data-lucide="message-circle" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+              <a href="https://wa.me/5511984337478" target="_blank" rel="noopener" class="hover:text-white underline">(11) 98433-7478 (WhatsApp)</a>
+            </li>
+            <li class="flex items-center gap-2">
+              <i data-lucide="qr-code" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+              <span>Pagamento via Pix</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- LINHA DE COPYRIGHT COM BOTÃO DISCRETO DE ACESSO RESTRITO -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
+        <p>© 2026 Drika Personal Chef • Chef Adriana Corrêa. Todos os direitos reservados.</p>
+        
+        <div class="flex items-center gap-4">
+          <span>Feito com amor e frescor da terra 🌿</span>
+          
+          <!-- BOTÃO DISCRETO NO RODAPÉ -->
+          <button 
+            class="open-admin-btn inline-flex items-center gap-1 text-[11px] text-stone-600 hover:text-stone-300 transition"
+            title="Acesso exclusivo da Chef Drika"
+          >
+            <i data-lucide="lock" class="w-3 h-3"></i>
+            <span>Painel da Chef</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- MODAL DE VISUALIZAÇÃO DE PANFLETO OFICIAL (ALTA RESOLUÇÃO)-->
+  <!-- ======================================================== -->
+  <div id="flyer-backdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300"></div>
+
+  <div 
+    id="flyer-modal" 
+    class="fixed inset-2 sm:inset-6 md:inset-10 lg:inset-16 z-50 bg-white rounded-3xl shadow-2xl hidden opacity-0 scale-95 transition-all duration-300 flex flex-col overflow-hidden border border-stone-300"
+  >
+    <!-- Topo do Modal -->
+    <div class="p-4 px-6 bg-earth-dark text-white flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-earth-gold text-earth-dark flex items-center justify-center font-bold">
+          <i data-lucide="file-text" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 id="flyer-modal-title" class="font-serif font-bold text-sm sm:text-base">Panfleto Oficial do Cardápio</h3>
+          <p class="text-[11px] text-stone-300">Chef Adriana Corrêa • R$ 24,90 cada marmita</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a 
+          id="flyer-download-btn" 
+          href="#" 
+          download 
+          target="_blank" 
+          class="px-3 py-1.5 rounded-xl bg-earth-olive hover:bg-earth-light text-white text-xs font-semibold flex items-center gap-1.5 transition"
+        >
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Baixar Imagem</span>
+        </a>
+        <button 
+          id="close-flyer-btn" 
+          class="p-2 rounded-xl text-stone-300 hover:text-white hover:bg-white/10 transition"
+          aria-label="Fechar"
+        >
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Seletor Rápido de Panfleto dentro do Modal -->
+    <div class="p-3 bg-stone-100 border-b border-stone-200 flex items-center justify-center gap-3 flex-shrink-0">
+      <button 
+        onclick="window.drikaApp.openFlyerModal('lowcarb')" 
+        class="px-4 py-1.5 rounded-xl text-xs font-bold bg-white text-earth-dark hover:bg-emerald-50 hover:text-earth-olive border border-stone-200 transition shadow-xs flex items-center gap-1.5"
+      >
+        <span>🥑 Cardápio Low Carb</span>
+      </button>
+      <button 
+        onclick="window.drikaApp.openFlyerModal('tradicional_fit')" 
+        class="px-4 py-1.5 rounded-xl text-xs font-bold bg-white text-earth-dark hover:bg-amber-50 hover:text-earth-olive border border-stone-200 transition shadow-xs flex items-center gap-1.5"
+      >
+        <span>🍱 Cardápio Tradicional e Fit</span>
+      </button>
+    </div>
+
+    <!-- Imagem em Alta Resolução -->
+    <div class="flex-1 overflow-auto p-4 flex items-center justify-center bg-stone-900/95">
+      <img id="flyer-modal-img" src="" alt="Panfleto Oficial da Chef Drika" class="max-h-full max-w-full object-contain rounded-xl shadow-2xl" />
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL DE LOGIN SEGURO DA CHEF                            -->
+  <!-- ======================================================== -->
+  <div id="login-backdrop" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"></div>
+
+  <div 
+    id="login-modal" 
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden opacity-0 scale-95 transition-all duration-300"
+  >
+    <div class="bg-white rounded-3xl max-w-sm w-full p-7 shadow-2xl border border-stone-200 relative">
+      <button 
+        id="close-login-btn" 
+        class="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-700 transition rounded-lg"
+        aria-label="Fechar Login"
+      >
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-earth-olive text-white flex items-center justify-center shadow-md mb-3">
+          <i data-lucide="lock" class="w-6 h-6 text-earth-gold"></i>
+        </div>
+        <h3 class="text-xl font-bold font-serif-title text-earth-dark">Acesso da Chef</h3>
+        <p class="text-xs text-stone-500 mt-1">Gerencie imagens dos pratos, chave Pix e dados do cardápio.</p>
+      </div>
+
+      <form id="form-login" class="space-y-4">
+        <div>
+          <label for="login-user" class="block text-xs font-bold text-stone-700 mb-1">Usuário</label>
+          <input 
+            type="text" 
+            id="login-user" 
+            required 
+            placeholder="drika" 
+            class="w-full p-2.5 text-xs rounded-xl custom-input" 
+            autocomplete="username"
+          />
+        </div>
+
+        <div>
+          <label for="login-pass" class="block text-xs font-bold text-stone-700 mb-1">Senha</label>
+          <input 
+            type="password" 
+            id="login-pass" 
+            required 
+            placeholder="••••••••" 
+            class="w-full p-2.5 text-xs rounded-xl custom-input" 
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div id="login-error-msg" class="hidden p-2.5 rounded-xl bg-red-50 text-red-700 text-xs font-medium border border-red-200 text-center"></div>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 rounded-xl font-bold text-xs bg-earth-olive hover:bg-earth-dark text-white shadow-md transition flex items-center justify-center gap-2 active:scale-98"
+        >
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+          <span>Entrar no Painel</span>
+        </button>
+
+        <p class="text-[11px] text-center text-stone-400">
+          Credencial padrão: Usuário <code class="bg-stone-100 px-1 py-0.5 rounded text-stone-700">drika</code> / Senha <code class="bg-stone-100 px-1 py-0.5 rounded text-stone-700">drika2026</code>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- PAINEL PRIVADO DE GESTÃO DA CHEF                         -->
+  <!-- ======================================================== -->
+  <div id="admin-backdrop" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300"></div>
+
+  <div 
+    id="admin-modal" 
+    class="fixed inset-4 sm:inset-10 lg:inset-x-32 lg:inset-y-10 bg-white rounded-3xl z-50 shadow-2xl hidden opacity-0 scale-95 transition-all duration-300 flex flex-col overflow-hidden border border-stone-200"
+  >
+    <!-- CABEÇALHO DO PAINEL -->
+    <div class="p-5 border-b border-stone-200 bg-[#FAF8F4] flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-earth-olive text-white flex items-center justify-center shadow-sm">
+          <i data-lucide="camera" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-serif-title font-bold text-lg text-earth-dark">Painel da Chef • Cardápio & Configurações</h3>
+          <p class="text-xs text-stone-500">Altere fotos dos pratos, configure a Chave Pix e edite o cardápio em tempo real</p>
+        </div>
+      </div>
+      <button 
+        id="close-admin-btn" 
+        class="p-2 rounded-xl text-stone-500 hover:bg-stone-200 transition"
+        aria-label="Fechar Painel"
+      >
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- ABAS DE NAVEGAÇÃO -->
+    <div class="px-5 py-3 border-b border-stone-200 bg-stone-50 flex items-center gap-2 overflow-x-auto scrollbar-none flex-shrink-0">
+      <button 
+        data-tab="menu-images" 
+        onclick="window.drikaApp.setAdminTab('menu-images')"
+        class="admin-tab-btn px-4 py-2 font-bold text-xs rounded-xl bg-earth-olive text-white shadow-sm transition whitespace-nowrap"
+      >
+        🍱 Pratos & Disponibilidade (Ativar / Desativar)
+      </button>
+      <button 
+        data-tab="pix-settings" 
+        onclick="window.drikaApp.setAdminTab('pix-settings')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap"
+      >
+        💠 Chave Pix & Contato
+      </button>
+      <button 
+        data-tab="media-manager" 
+        onclick="window.drikaApp.setAdminTab('media-manager')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap"
+      >
+        📺 Fotos da Mídia & Entrevistas
+      </button>
+      <button 
+        data-tab="add-dish" 
+        onclick="window.drikaApp.setAdminTab('add-dish')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap"
+      >
+        ➕ Cadastrar Novo Prato
+      </button>
+      <button 
+        data-tab="site-images" 
+        onclick="window.drikaApp.setAdminTab('site-images')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap"
+      >
+        🖼️ Fotos do Site & Panfletos
+      </button>
+      <button 
+        data-tab="security" 
+        onclick="window.drikaApp.setAdminTab('security')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap"
+      >
+        🔒 Alterar Senha
+      </button>
+      <button 
+        data-tab="backup" 
+        onclick="window.drikaApp.setAdminTab('backup')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap"
+      >
+        💾 Backup & Restaurar
+      </button>
+    </div>
+
+    <!-- CORPO DO PAINEL (CONTEÚDO DINÂMICO) -->
+    <div id="admin-tab-content" class="flex-1 overflow-y-auto p-6 bg-white">
+      <!-- Injetado via renderAdminContent() no app.js -->
+    </div>
+
+    <!-- RODAPÉ DO PAINEL -->
+    <div class="p-4 border-t border-stone-200 bg-[#FAF8F4] flex items-center justify-between text-xs text-stone-500 flex-shrink-0">
+      <span>🌿 As fotos e alterações ficam salvas automaticamente no navegador.</span>
+      <div class="flex items-center gap-3">
+        <button 
+          onclick="window.drikaApp.logout()" 
+          class="text-xs text-red-600 hover:underline font-semibold"
+        >
+          Encerrar Sessão
+        </button>
+        <button 
+          onclick="window.drikaApp.closeAdminModal()"
+          class="px-5 py-2 rounded-xl font-bold bg-earth-olive text-white hover:bg-earth-dark transition shadow-sm"
+        >
+          Concluir e Voltar ao Site
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- DRAWER LATERAL DO CARRINHO DE COMPRAS INTERATIVO         -->
+  <!-- ======================================================== -->
+  <div id="cart-backdrop" class="fixed inset-0 z-50 cart-backdrop hidden opacity-0 transition-opacity duration-300"></div>
+
+  <div 
+    id="cart-drawer" 
+    class="fixed top-0 right-0 bottom-0 w-full sm:w-[480px] bg-white z-50 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between"
+  >
+    <!-- CABEÇALHO DO CARRINHO -->
+    <div class="p-5 border-b border-[#E8E2D6] bg-[#FAF8F4] flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-earth-olive text-white flex items-center justify-center">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="font-serif-title font-bold text-lg text-earth-dark">Seu Pedido</h3>
+          <span class="text-xs text-stone-500">Drika Personal Chef • Marmitas R$ 24,90</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button 
+          id="btn-clear-cart" 
+          class="text-xs text-stone-400 hover:text-red-500 transition px-2 py-1"
+          title="Limpar todos os itens"
+        >
+          Limpar
+        </button>
+        <button 
+          id="close-cart-btn" 
+          class="p-2 rounded-xl text-stone-500 hover:bg-stone-200 transition"
+          aria-label="Fechar Carrinho"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- CORPO COM ITENS DO CARRINHO -->
+    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+      
+      <!-- ESTADO VAZIO -->
+      <div id="cart-empty-state" class="py-12 text-center space-y-3">
+        <div class="w-16 h-16 mx-auto rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+          <i data-lucide="shopping-cart" class="w-8 h-8"></i>
+        </div>
+        <h4 class="font-serif-title font-bold text-stone-800 text-lg">Seu carrinho está vazio</h4>
+        <p class="text-xs text-stone-500 max-w-xs mx-auto">
+          Escolha suas opções favoritas dos cardápios Low Carb ou Tradicional & Fit por R$ 24,90 cada!
+        </p>
+      </div>
+
+      <!-- LISTA DINÂMICA DE ITENS -->
+      <div id="cart-items-container" class="space-y-1">
+        <!-- Injetado pelo app.js -->
+      </div>
+
+      <!-- FORMULÁRIO DE ENTREGA E AGENDAMENTO -->
+      <div id="cart-checkout-fields" class="pt-4 border-t border-earth-sand space-y-4 text-xs">
+        
+        <h4 class="font-bold text-sm text-earth-dark font-serif-title flex items-center gap-1.5">
+          <i data-lucide="truck" class="w-4 h-4 text-earth-olive"></i>
+          <span>Entrega & Agendamento</span>
+        </h4>
+
+        <!-- Seletor de Modalidade -->
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-stone-50 cursor-pointer hover:bg-emerald-50/50 has-[:checked]:border-earth-olive has-[:checked]:bg-emerald-50">
+            <input type="radio" name="delivery-type" id="delivery-option-delivery" value="delivery" checked class="text-earth-olive focus:ring-earth-olive" />
+            <span class="font-semibold text-stone-800">🚚 Entrega / Delivery</span>
+          </label>
+          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-stone-50 cursor-pointer hover:bg-emerald-50/50 has-[:checked]:border-earth-olive has-[:checked]:bg-emerald-50">
+            <input type="radio" name="delivery-type" id="delivery-option-pickup" value="retirada" class="text-earth-olive focus:ring-earth-olive" />
+            <span class="font-semibold text-stone-800">📍 Retirada no Local</span>
+          </label>
+        </div>
+
+        <!-- Campo de Endereço (se delivery) -->
+        <div id="delivery-address-wrapper">
+          <label for="checkout-address" class="block font-bold text-stone-700 mb-1">Endereço Completo de Entrega *</label>
+          <input type="text" id="checkout-address" placeholder="Rua, número, complemento, bairro e cidade" class="w-full p-2.5 rounded-xl custom-input text-xs" />
+        </div>
+
+        <!-- Seletor de Data e Período -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="checkout-date" class="block font-bold text-stone-700 mb-1">Data Desejada *</label>
+            <input type="date" id="checkout-date" class="w-full p-2.5 rounded-xl custom-input text-xs" />
+          </div>
+          <div>
+            <label for="checkout-period" class="block font-bold text-stone-700 mb-1">Período de Entrega</label>
+            <select id="checkout-period" class="w-full p-2.5 rounded-xl custom-input text-xs">
+              <option value="Manhã (09h às 12h)">Manhã (09h às 12h)</option>
+              <option value="Tarde (14h às 18h)">Tarde (14h às 18h)</option>
+              <option value="Horário a combinar">Horário a combinar</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Dados do Cliente -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="checkout-name" class="block font-bold text-stone-700 mb-1">Seu Nome *</label>
+            <input type="text" id="checkout-name" placeholder="Nome completo" class="w-full p-2.5 rounded-xl custom-input text-xs" />
+          </div>
+          <div>
+            <label for="checkout-phone" class="block font-bold text-stone-700 mb-1">Seu WhatsApp *</label>
+            <input type="tel" id="checkout-phone" placeholder="(11) 98433-7478" class="w-full p-2.5 rounded-xl custom-input text-xs" />
+          </div>
+        </div>
+
+        <!-- Observações / Restrições -->
+        <div>
+          <label for="checkout-notes" class="block font-bold text-stone-700 mb-1">Observações ou Restrições Alimentares</label>
+          <input type="text" id="checkout-notes" placeholder="Ex: Preferência congeladas, sem cebola, etc." class="w-full p-2.5 rounded-xl custom-input text-xs" />
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RODAPÉ DO CARRINHO (TOTAL E CHECKOUT) -->
+    <div id="cart-footer" class="p-5 border-t border-[#E8E2D6] bg-[#FAF8F4] space-y-3">
+      <!-- Linha do Subtotal -->
+      <div class="flex items-center justify-between text-xs text-stone-600">
+        <span>Subtotal dos Itens:</span>
+        <span id="cart-subtotal-val" class="font-bold text-stone-800 text-sm">R$ 0,00</span>
+      </div>
+
+      <!-- Linha Dinâmica do Desconto Combo -->
+      <div id="cart-discount-row" class="hidden"></div>
+
+      <!-- Dica de Ativação do Próximo Combo -->
+      <div id="cart-combo-notice" class="hidden text-[11px] text-emerald-800 bg-emerald-50/80 p-2 rounded-xl border border-emerald-200 text-center"></div>
+
+      <!-- Linha do Total Final -->
+      <div class="flex items-center justify-between pt-1 border-t border-stone-200">
+        <span class="text-sm font-bold text-stone-900">Total do Pedido:</span>
+        <span id="cart-total-val" class="text-2xl font-extrabold text-earth-dark font-serif-title">R$ 0,00</span>
+      </div>
+
+      <!-- Box Informativo do Pix com Chave e Botão Copiar -->
+      <div id="cart-pix-box" class="pt-1"></div>
+
+      <button 
+        id="btn-checkout-whatsapp"
+        class="w-full py-3.5 px-5 rounded-2xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-700/20 transition flex items-center justify-center gap-2 active:scale-98"
+      >
+        <i data-lucide="message-circle" class="w-5 h-5"></i>
+        <span>Enviar Pedido para o WhatsApp da Chef</span>
+      </button>
+
+      <p class="text-[10px] text-center text-stone-400">
+        Ao clicar, seu pedido formatado abrirá no WhatsApp oficial da Chef Drika.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- BOTAO FLUTUANTE DE WHATSAPP -->
+  <a 
+    href="https://wa.me/5511984337478?text=Ol%C3%A1%20Chef%20Drika!%20Gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20as%20marmitas%20e%20eventos." 
+    target="_blank" 
+    rel="noopener"
+    class="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform active:scale-95"
+    title="Fale com a Chef Drika no WhatsApp"
+    aria-label="Fale com a Chef Drika no WhatsApp"
+  >
+    <i data-lucide="message-circle" class="w-7 h-7"></i>
+  </a>
+
+  <!-- SCRIPTS -->
+  <script src="menu-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
