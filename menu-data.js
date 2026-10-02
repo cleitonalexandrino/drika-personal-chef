@@ -321,11 +321,15 @@ const DEFAULT_SITE_IMAGES = {
   heroMode: "carousel", // 'carousel' ou 'single'
   heroChef: "assets/CHEF.jpg",
   heroCarousel: [
-    { url: "assets/refeicoes/CARNE MOIDA TEMPERADA COM LEGUMES.jpg", caption: "Carne Moída Temperada com Legumes Selecionados", tag: "Prato da Semana" },
-    { url: "assets/refeicoes/FILE DE SOBRECOXA.jpg", caption: "Filé de Sobrecoxa Dourada com Purê e Legumes", tag: "Fit & Saudável" },
-    { url: "assets/refeicoes/1. lasanha de beringela.jpg", caption: "Lasanha de Beringela Artesanal Gratinada", tag: "Low Carb" },
-    { url: "assets/CHEF.jpg", caption: "Chef Adriana Corrêa • Cozinha Afetiva & Nutritiva", tag: "Personal Chef" },
-    { url: "assets/PODCAST.jpg", caption: "Chef Drika no Podcast • Gastronomia Saudável", tag: "Na Mídia" }
+    { url: "assets/refeicoes/1. lasanha de beringela.jpg", caption: "Lasanha de Beringela Low Carb", tag: "Low Carb" },
+    { url: "assets/refeicoes/2. FILE DE SOBRECOXA (2).jpg", caption: "Filé de Sobrecoxa com Purê & Legumes", tag: "Tradicional & Fit" },
+    { url: "assets/refeicoes/3. CARNE MOIDA TEMPERADA COM LEGUMES.jpg", caption: "Carne Moída com Cenoura e Vagem Fresca", tag: "Prato da Semana" },
+    { url: "assets/refeicoes/4.jpg", caption: "Refeição Completa, Saudável & Balanceada", tag: "Fit & Saudável" },
+    { url: "assets/refeicoes/5. CAMINHA DE BATATA DOCE.jpg", caption: "Caminha de Batata Doce com Frango", tag: "Nutrição Ativa" },
+    { url: "assets/refeicoes/6. PERNIL DESFIADO.jpg", caption: "Pernil Desfiado com Purê & Ervas Finas", tag: "Sabor Caseiro" },
+    { url: "assets/refeicoes/7. QUIBE RECHEADO.jpg", caption: "Quibe Artesanal Recheado de Forno", tag: "Low Carb" },
+    { url: "assets/refeicoes/8. ESCONDIDINHO.jpg", caption: "Escondidinho Cremoso Fit", tag: "Cozinha Afetiva" },
+    { url: "assets/refeicoes/9. FRANGO EM CUBOS.jpg", caption: "Frango em Cubos com Legumes da Horta", tag: "Prato do Dia" }
   ],
   heroCarouselSubject: "Pratos Selecionados da Semana",
   heroCarouselInterval: 4000,

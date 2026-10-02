@@ -219,8 +219,8 @@
         if (!currentSiteImages.heroCarouselInterval) {
           currentSiteImages.heroCarouselInterval = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarouselInterval) || 4000;
         }
-        // Migração suave caso o cache local contenha caminhos antigos de assets/carrossel
-        if (currentSiteImages.heroCarousel && currentSiteImages.heroCarousel.some(s => s.url && s.url.includes("assets/carrossel"))) {
+        // Migração suave caso o cache local contenha caminhos antigos de assets/carrossel ou menos de 9 fotos
+        if (!currentSiteImages.heroCarousel || currentSiteImages.heroCarousel.length < 9 || currentSiteImages.heroCarousel.some(s => s.url && s.url.includes("assets/carrossel"))) {
           currentSiteImages.heroCarousel = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarousel) ? JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES.heroCarousel)) : [];
         }
 
@@ -1662,9 +1662,11 @@
     document.querySelectorAll(".admin-tab-btn").forEach((btn) => {
       const tab = btn.getAttribute("data-tab");
       if (tab === currentAdminTab) {
-        btn.className = "admin-tab-btn px-4 py-2 font-bold text-xs rounded-xl bg-earth-olive text-white shadow-sm transition";
+        btn.className = "admin-tab-btn px-4 py-2 font-bold text-xs rounded-xl bg-earth-olive text-white shadow-sm transition whitespace-nowrap flex items-center gap-1.5";
+      } else if (tab === "hero-carousel") {
+        btn.className = "admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 transition whitespace-nowrap flex items-center gap-1.5";
       } else {
-        btn.className = "admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition";
+        btn.className = "admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap flex items-center gap-1.5";
       }
     });
 
@@ -2198,6 +2200,447 @@
             <span>Salvar e Cadastrar no Cardápio</span>
           </button>
         </form>
+      `;
+    } else if (currentAdminTab === "hero-carousel") {
+      // TAB DEDICADA: CARROSSEL TOPO DE PÁG. (SOLICITAÇÃO PRINCIPAL)
+      bodyContainer.innerHTML = `
+        <div class="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
+          <!-- CABEÇALHO DO CARROSSEL TOPO DE PÁG. -->
+          <div class="p-4 sm:p-5 rounded-2xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-amber-50 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-emerald-600 text-white shadow-xs">
+                  <i data-lucide="layout-template" class="w-5 h-5"></i>
+                </span>
+                <h4 class="font-bold text-base sm:text-lg text-earth-dark font-serif-title">
+                  Carrossel Topo de Pág. (Página Inicial)
+                </h4>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                  Área Exclusiva ADM
+                </span>
+              </div>
+              <p class="text-xs text-stone-600 mt-1 max-w-2xl leading-relaxed">
+                Opção exclusiva com acesso por senha para compartilhamento e exibição de imagens em formato carrossel no topo do site. Todas as fotos da pasta <code class="bg-white px-2 py-0.5 rounded border border-stone-200 text-emerald-800 font-mono text-[11px] font-bold">assets/refeiçoes</code> estão sincronizadas abaixo.
+              </p>
+            </div>
+
+            <!-- Seletor de Modo: Carrossel Automático vs Foto Única -->
+            <div class="inline-flex p-1 bg-white rounded-xl border border-stone-200 text-xs font-semibold self-start md:self-center shadow-xs">
+              <button 
+                type="button"
+                onclick="window.drikaApp.setHeroMode('carousel')"
+                class="px-3.5 py-2 rounded-lg transition ${currentSiteImages.heroMode !== 'single' ? 'bg-earth-olive text-white shadow-xs font-bold' : 'text-stone-600 hover:text-stone-900'}"
+              >
+                🎠 Carrossel Automático
+              </button>
+              <button 
+                type="button"
+                onclick="window.drikaApp.setHeroMode('single')"
+                class="px-3.5 py-2 rounded-lg transition ${currentSiteImages.heroMode === 'single' ? 'bg-earth-olive text-white shadow-xs font-bold' : 'text-stone-600 hover:text-stone-900'}"
+              >
+                🖼️ Foto Única
+              </button>
+            </div>
+          </div>
+
+          ${currentSiteImages.heroMode !== 'single' ? `
+            <!-- Configurações do Carrossel Topo de Pág. -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-stone-50/80 p-4 rounded-2xl border border-stone-200">
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">
+                  📌 Assunto / Tema em Destaque no Topo
+                </label>
+                <input 
+                  type="text" 
+                  id="admin-hero-carousel-subject"
+                  value="${currentSiteImages.heroCarouselSubject || 'Pratos Selecionados da Semana'}" 
+                  onchange="window.drikaApp.updateHeroCarouselSubject(this.value)"
+                  placeholder="Ex: Pratos Selecionados da Semana, Marmitas Congeladas..."
+                  class="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-white shadow-2xs font-semibold"
+                />
+                <p class="text-[10px] text-stone-500 mt-1">Texto exibido na tag dourada da foto na página inicial.</p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">
+                  ⏱️ Velocidade da Transição Automática
+                </label>
+                <select 
+                  onchange="window.drikaApp.updateHeroCarouselInterval(this.value)"
+                  class="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-white shadow-2xs font-semibold"
+                >
+                  <option value="3000" ${currentSiteImages.heroCarouselInterval == 3000 ? 'selected' : ''}>A cada 3 segundos (Mais Dinâmico)</option>
+                  <option value="4000" ${!currentSiteImages.heroCarouselInterval || currentSiteImages.heroCarouselInterval == 4000 ? 'selected' : ''}>A cada 4 segundos (Recomendado)</option>
+                  <option value="5000" ${currentSiteImages.heroCarouselInterval == 5000 ? 'selected' : ''}>A cada 5 segundos</option>
+                  <option value="6000" ${currentSiteImages.heroCarouselInterval == 6000 ? 'selected' : ''}>A cada 6 segundos (Mais Suave)</option>
+                </select>
+                <p class="text-[10px] text-stone-500 mt-1">O carrossel gira automaticamente e pausa ao posicionar o cursor.</p>
+              </div>
+            </div>
+
+            <!-- OPÇÕES PARA COMPARTILHAMENTO / UPLOAD DE FOTOS -->
+            <div class="bg-white p-5 rounded-2xl border-2 border-dashed border-emerald-300 space-y-4">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <span class="text-xs sm:text-sm font-bold text-earth-dark flex items-center gap-2">
+                  <i data-lucide="cloud-upload" class="w-4 h-4 text-emerald-600"></i>
+                  Compartilhar Novas Fotos no Carrossel Topo de Pág.
+                </span>
+                <button 
+                  type="button" 
+                  onclick="window.drikaApp.resetHeroCarouselToDefault()" 
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  title="Recarrega todas as 9 refeições oficiais da pasta assets/refeicoes"
+                >
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span>🔄 Recarregar 9 Fotos de assets/refeições</span>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <!-- Opção 1: Selecionar Fotos do Computador -->
+                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-emerald-300 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/60 cursor-pointer transition text-center group bg-emerald-50/20">
+                  <i data-lucide="folder-up" class="w-7 h-7 text-emerald-600 group-hover:scale-110 transition-transform mb-1.5"></i>
+                  <span class="text-xs font-bold text-emerald-950">📁 Selecionar Fotos da Pasta (Computador)</span>
+                  <span class="text-[10px] text-stone-500 mt-0.5">Selecione uma ou mais fotos para adicionar ao carrossel</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    multiple 
+                    class="hidden" 
+                    onchange="window.drikaApp.handleHeroBatchUpload(event)"
+                  />
+                </label>
+
+                <!-- Opção 2: Submeter Pasta Inteira de Fotos -->
+                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-stone-300 rounded-xl hover:border-stone-500 hover:bg-stone-50 cursor-pointer transition text-center group bg-stone-50/50">
+                  <i data-lucide="folder-archive" class="w-7 h-7 text-earth-olive group-hover:scale-110 transition-transform mb-1.5"></i>
+                  <span class="text-xs font-bold text-stone-800">📂 Submeter Pasta Inteira de Fotos</span>
+                  <span class="text-[10px] text-stone-500 mt-0.5">Importa todas as fotos da pasta de refeições de uma única vez</span>
+                  <input 
+                    type="file" 
+                    webkitdirectory 
+                    directory 
+                    multiple 
+                    class="hidden" 
+                    onchange="window.drikaApp.handleHeroFolderUpload(event)"
+                  />
+                </label>
+              </div>
+
+              <!-- Opção 3: Adicionar Foto por Caminho ou Link -->
+              <div class="pt-3 border-t border-stone-100 flex flex-col sm:flex-row items-center gap-2">
+                <input 
+                  type="text" 
+                  id="admin-hero-new-url"
+                  placeholder="Ou digite o caminho local / link (ex: assets/refeicoes/1. lasanha de beringela.jpg)" 
+                  class="flex-1 w-full px-3 py-2 text-xs rounded-xl border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                />
+                <input 
+                  type="text" 
+                  id="admin-hero-new-caption"
+                  placeholder="Legenda do prato (opcional)" 
+                  class="w-full sm:w-52 px-3 py-2 text-xs rounded-xl border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                />
+                <button 
+                  type="button" 
+                  onclick="window.drikaApp.addHeroSlideByUrl()" 
+                  class="w-full sm:w-auto px-5 py-2 rounded-xl bg-earth-olive text-white text-xs font-bold hover:bg-earth-dark transition whitespace-nowrap shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Adicionar Foto</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- GRADE DAS FOTOS ATIVAS NO CARROSSEL TOPO DE PÁG. -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-stone-800 flex items-center gap-2">
+                  <i data-lucide="images" class="w-4 h-4 text-earth-olive"></i>
+                  Fotos ativas no Carrossel Topo de Página (${(currentSiteImages.heroCarousel || []).length} fotos):
+                </span>
+                <span class="text-[11px] text-stone-500">
+                  Arraste ou use as setas ⬅️ ➡️ para ordenar
+                </span>
+              </div>
+              
+              ${(!currentSiteImages.heroCarousel || currentSiteImages.heroCarousel.length === 0) ? `
+                <div class="p-8 text-center bg-stone-50 rounded-2xl border border-stone-200 text-stone-400 text-xs">
+                  Nenhuma foto cadastrada no carrossel. Use as opções acima ou clique em "Recarregar 9 Fotos de assets/refeições".
+                </div>
+              ` : `
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto p-2 bg-stone-50 rounded-2xl border border-stone-200">
+                  ${currentSiteImages.heroCarousel.map((slide, idx) => `
+                    <div class="p-2.5 rounded-xl border border-stone-200 bg-white shadow-xs space-y-2 relative group hover:border-emerald-300 transition">
+                      <div class="aspect-[4/3] rounded-lg overflow-hidden bg-stone-100 relative border border-stone-200/60">
+                        <img src="${slide.url}" alt="${slide.caption || 'Foto ' + (idx + 1)}" class="w-full h-full object-cover" />
+                        <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/75 text-white shadow-xs">#${idx + 1}</span>
+                      </div>
+                      <div>
+                        <input 
+                          type="text" 
+                          value="${slide.caption || ''}" 
+                          placeholder="Legenda do prato..."
+                          title="Altere a legenda e clique fora para salvar"
+                          onchange="window.drikaApp.updateHeroSlideCaption(${idx}, this.value)"
+                          class="w-full px-2 py-1 text-[11px] rounded-lg border border-stone-300 focus:outline-hidden text-stone-800 bg-stone-50 focus:bg-white font-medium"
+                        />
+                      </div>
+                      <div class="flex items-center justify-between pt-1 border-t border-stone-100">
+                        <button 
+                          type="button" 
+                          onclick="window.drikaApp.moveHeroSlideUp(${idx})" 
+                          class="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 text-xs ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}"
+                          title="Mover para esquerda"
+                        >
+                          ⬅️
+                        </button>
+                        <button 
+                          type="button" 
+                          onclick="window.drikaApp.removeHeroSlide(${idx})" 
+                          class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold transition"
+                          title="Remover do carrossel"
+                        >
+                          🗑️ Excluir
+                        </button>
+                        <button 
+                          type="button" 
+                          onclick="window.drikaApp.moveHeroSlideDown(${idx})" 
+                          class="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 text-xs ${idx === (currentSiteImages.heroCarousel.length - 1) ? 'opacity-30 pointer-events-none' : ''}"
+                          title="Mover para direita"
+                        >
+                          ➡️
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          ` : `
+            <!-- Modo Foto Única no Topo -->
+            <div class="p-6 rounded-2xl border border-stone-200 bg-white space-y-4 max-w-md">
+              <span class="text-xs font-bold text-stone-700 block">Preview da Foto Única no Topo:</span>
+              <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-sm">
+                <img src="${currentSiteImages.heroChef || 'assets/CHEF.jpg'}" id="admin-site-hero-preview" class="w-full h-full object-cover" />
+              </div>
+              <label class="w-full cursor-pointer inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-white text-earth-olive border border-emerald-200 hover:bg-emerald-50 transition shadow-xs">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Substituir Foto Única do Topo</span>
+                <input type="file" accept="image/*" class="hidden" onchange="window.drikaApp.handleSiteImageUpload(event, 'heroChef')" />
+              </label>
+            </div>
+          `}
+        </div>
+      `;
+    } else if (currentAdminTab === "about-carousel") {
+      // TAB DEDICADA: CARROSSEL QUEM SOU EU (BIOGRAFIA DA CHEF)
+      bodyContainer.innerHTML = `
+        <div class="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
+          <!-- CABEÇALHO DO CARROSSEL QUEM SOU EU -->
+          <div class="p-4 sm:p-5 rounded-2xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-amber-50 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-earth-olive text-white shadow-xs">
+                  <i data-lucide="user-check" class="w-5 h-5"></i>
+                </span>
+                <h4 class="font-bold text-base sm:text-lg text-earth-dark font-serif-title">
+                  Carrossel 'Quem Sou Eu' (Biografia da Chef)
+                </h4>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  Seção Sobre
+                </span>
+              </div>
+              <p class="text-xs text-stone-600 mt-1 max-w-2xl leading-relaxed">
+                Gerencie as fotos da Chef Adriana Corrêa exibidas na seção biográfica do site. Todas as 9 fotos salvas em <code class="bg-white px-2 py-0.5 rounded border border-stone-200 text-emerald-800 font-mono text-[11px] font-bold">assets/quem sou eu</code> estão ativas abaixo.
+              </p>
+            </div>
+
+            <!-- Seletor de Modo -->
+            <div class="inline-flex p-1 bg-white rounded-xl border border-stone-200 text-xs font-semibold self-start md:self-center shadow-xs">
+              <button 
+                type="button"
+                onclick="window.drikaApp.setAboutMode('carousel')"
+                class="px-3.5 py-2 rounded-lg transition ${currentSiteImages.aboutMode !== 'single' ? 'bg-earth-olive text-white shadow-xs font-bold' : 'text-stone-600 hover:text-stone-900'}"
+              >
+                🎠 Carrossel Automático
+              </button>
+              <button 
+                type="button"
+                onclick="window.drikaApp.setAboutMode('single')"
+                class="px-3.5 py-2 rounded-lg transition ${currentSiteImages.aboutMode === 'single' ? 'bg-earth-olive text-white shadow-xs font-bold' : 'text-stone-600 hover:text-stone-900'}"
+              >
+                🖼️ Foto Única
+              </button>
+            </div>
+          </div>
+
+          ${currentSiteImages.aboutMode !== 'single' ? `
+            <!-- Configuração de Velocidade -->
+            <div class="bg-stone-50/80 p-4 rounded-2xl border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-0.5">
+                  ⏱️ Velocidade da Transição Automática
+                </label>
+                <p class="text-[10px] text-stone-500">Tempo de permanência de cada foto na seção biográfica</p>
+              </div>
+              <select 
+                onchange="window.drikaApp.updateAboutCarouselInterval(this.value)"
+                class="w-full sm:w-64 px-3 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-white shadow-2xs font-semibold"
+              >
+                <option value="3000" ${currentSiteImages.aboutCarouselInterval == 3000 ? 'selected' : ''}>A cada 3 segundos (Mais Dinâmico)</option>
+                <option value="4000" ${!currentSiteImages.aboutCarouselInterval || currentSiteImages.aboutCarouselInterval == 4000 ? 'selected' : ''}>A cada 4 segundos (Recomendado)</option>
+                <option value="5000" ${currentSiteImages.aboutCarouselInterval == 5000 ? 'selected' : ''}>A cada 5 segundos</option>
+                <option value="6000" ${currentSiteImages.aboutCarouselInterval == 6000 ? 'selected' : ''}>A cada 6 segundos (Mais Suave)</option>
+              </select>
+            </div>
+
+            <!-- Submissão de Fotos para a Seção Quem Sou Eu -->
+            <div class="bg-white p-5 rounded-2xl border-2 border-dashed border-emerald-300 space-y-4">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <span class="text-xs sm:text-sm font-bold text-earth-dark flex items-center gap-2">
+                  <i data-lucide="cloud-upload" class="w-4 h-4 text-emerald-600"></i>
+                  Compartilhar Novas Fotos da Chef (Seção Quem Sou Eu)
+                </span>
+                <button 
+                  type="button" 
+                  onclick="window.drikaApp.resetAboutCarouselToDefault()" 
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  title="Recarregar todas as 9 fotos de assets/quem sou eu"
+                >
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span>🔄 Recarregar 9 Fotos de assets/quem sou eu</span>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-emerald-300 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/60 cursor-pointer transition text-center group bg-emerald-50/20">
+                  <i data-lucide="folder-up" class="w-7 h-7 text-emerald-600 group-hover:scale-110 transition-transform mb-1.5"></i>
+                  <span class="text-xs font-bold text-emerald-950">📁 Selecionar Fotos da Pasta (Computador)</span>
+                  <span class="text-[10px] text-stone-500 mt-0.5">Selecione fotos da Chef para adicionar ao carrossel</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    multiple 
+                    class="hidden" 
+                    onchange="window.drikaApp.handleAboutBatchUpload(event)"
+                  />
+                </label>
+
+                <label class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-stone-300 rounded-xl hover:border-stone-500 hover:bg-stone-50 cursor-pointer transition text-center group bg-stone-50/50">
+                  <i data-lucide="folder-archive" class="w-7 h-7 text-earth-olive group-hover:scale-110 transition-transform mb-1.5"></i>
+                  <span class="text-xs font-bold text-stone-800">📂 Submeter Pasta 'quem sou eu'</span>
+                  <span class="text-[10px] text-stone-500 mt-0.5">Importa todas as fotos de uma pasta inteira</span>
+                  <input 
+                    type="file" 
+                    webkitdirectory 
+                    directory 
+                    multiple 
+                    class="hidden" 
+                    onchange="window.drikaApp.handleAboutFolderUpload(event)"
+                  />
+                </label>
+              </div>
+
+              <div class="pt-3 border-t border-stone-100 flex flex-col sm:flex-row items-center gap-2">
+                <input 
+                  type="text" 
+                  id="admin-about-new-url"
+                  placeholder="Ou digite o caminho local / link (ex: assets/quem sou eu/1.jpg)" 
+                  class="flex-1 w-full px-3 py-2 text-xs rounded-xl border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                />
+                <input 
+                  type="text" 
+                  id="admin-about-new-caption"
+                  placeholder="Legenda da foto (opcional)" 
+                  class="w-full sm:w-52 px-3 py-2 text-xs rounded-xl border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                />
+                <button 
+                  type="button" 
+                  onclick="window.drikaApp.addAboutSlideByUrl()" 
+                  class="w-full sm:w-auto px-5 py-2 rounded-xl bg-earth-olive text-white text-xs font-bold hover:bg-earth-dark transition whitespace-nowrap shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Adicionar Foto</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Grade das Fotos Quem Sou Eu -->
+            <div class="space-y-3">
+              <span class="text-xs font-bold text-stone-800 flex items-center gap-2">
+                <i data-lucide="images" class="w-4 h-4 text-earth-olive"></i>
+                Fotos ativas no Carrossel 'Quem Sou Eu' (${(currentSiteImages.aboutCarousel || []).length} fotos):
+              </span>
+              
+              ${(!currentSiteImages.aboutCarousel || currentSiteImages.aboutCarousel.length === 0) ? `
+                <div class="p-8 text-center bg-stone-50 rounded-2xl border border-stone-200 text-stone-400 text-xs">
+                  Nenhuma foto cadastrada. Clique em "Recarregar 9 Fotos de assets/quem sou eu" acima.
+                </div>
+              ` : `
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto p-2 bg-stone-50 rounded-2xl border border-stone-200">
+                  ${currentSiteImages.aboutCarousel.map((slide, idx) => `
+                    <div class="p-2.5 rounded-xl border border-stone-200 bg-white shadow-xs space-y-2 relative group hover:border-emerald-300 transition">
+                      <div class="aspect-[4/3] rounded-lg overflow-hidden bg-stone-100 relative border border-stone-200/60">
+                        <img src="${slide.url}" alt="${slide.caption || 'Foto ' + (idx + 1)}" class="w-full h-full object-cover" />
+                        <span class="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/75 text-white shadow-xs">#${idx + 1}</span>
+                      </div>
+                      <div>
+                        <input 
+                          type="text" 
+                          value="${slide.caption || ''}" 
+                          placeholder="Legenda da foto..."
+                          title="Altere a legenda e clique fora para salvar"
+                          onchange="window.drikaApp.updateAboutSlideCaption(${idx}, this.value)"
+                          class="w-full px-2 py-1 text-[11px] rounded-lg border border-stone-300 focus:outline-hidden text-stone-800 bg-stone-50 focus:bg-white font-medium"
+                        />
+                      </div>
+                      <div class="flex items-center justify-between pt-1 border-t border-stone-100">
+                        <button 
+                          type="button" 
+                          onclick="window.drikaApp.moveAboutSlideUp(${idx})" 
+                          class="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 text-xs ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}"
+                          title="Mover para esquerda"
+                        >
+                          ⬅️
+                        </button>
+                        <button 
+                          type="button" 
+                          onclick="window.drikaApp.removeAboutSlide(${idx})" 
+                          class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-[10px] font-bold transition"
+                          title="Remover do carrossel"
+                        >
+                          🗑️ Excluir
+                        </button>
+                        <button 
+                          type="button" 
+                          onclick="window.drikaApp.moveAboutSlideDown(${idx})" 
+                          class="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 text-xs ${idx === (currentSiteImages.aboutCarousel.length - 1) ? 'opacity-30 pointer-events-none' : ''}"
+                          title="Mover para direita"
+                        >
+                          ➡️
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          ` : `
+            <!-- Modo Foto Única Quem Sou Eu -->
+            <div class="p-6 rounded-2xl border border-stone-200 bg-white space-y-4 max-w-md">
+              <span class="text-xs font-bold text-stone-700 block">Preview da Foto Única da Seção Sobre:</span>
+              <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-sm">
+                <img src="${currentSiteImages.aboutChef || 'assets/quem sou eu/1.jpg'}" id="admin-site-about-preview" class="w-full h-full object-cover" />
+              </div>
+              <label class="w-full cursor-pointer inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-white text-earth-olive border border-emerald-200 hover:bg-emerald-50 transition shadow-xs">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Substituir Foto Única Sobre a Chef</span>
+                <input type="file" accept="image/*" class="hidden" onchange="window.drikaApp.handleSiteImageUpload(event, 'aboutChef')" />
+              </label>
+            </div>
+          `}
+        </div>
       `;
     } else if (currentAdminTab === "site-images") {
       // TAB: IMAGENS INSTITUCIONAIS DO SITE

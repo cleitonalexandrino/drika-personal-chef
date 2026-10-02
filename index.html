@@ -52,11 +52,19 @@
       </div>
       <div class="flex items-center gap-3">
         <button 
+          onclick="window.drikaApp.openAdminModal('hero-carousel')" 
+          class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-semibold transition flex items-center gap-1.5 shadow-xs"
+          title="Editar fotos e carrossel do topo da página"
+        >
+          <i data-lucide="layout-template" class="w-3.5 h-3.5 text-amber-300"></i>
+          <span>Carrossel Topo de Pág.</span>
+        </button>
+        <button 
           onclick="window.drikaApp.openAdminModal('menu-images')" 
           class="px-3 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 font-semibold transition flex items-center gap-1.5"
         >
           <i data-lucide="camera" class="w-3.5 h-3.5 text-amber-300"></i>
-          <span>Abrir Painel de Gestão</span>
+          <span>Painel Geral</span>
         </button>
         <button 
           onclick="window.drikaApp.logout()" 
@@ -1025,7 +1033,21 @@
         onclick="window.drikaApp.setAdminTab('menu-images')"
         class="admin-tab-btn px-4 py-2 font-bold text-xs rounded-xl bg-earth-olive text-white shadow-sm transition whitespace-nowrap"
       >
-        🍱 Pratos & Disponibilidade (Ativar / Desativar)
+        🍱 Pratos & Disponibilidade
+      </button>
+      <button 
+        data-tab="hero-carousel" 
+        onclick="window.drikaApp.setAdminTab('hero-carousel')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-700 bg-amber-50 hover:bg-amber-100 border border-amber-300 transition whitespace-nowrap flex items-center gap-1.5"
+      >
+        <span>🎠 Carrossel Topo de Pág.</span>
+      </button>
+      <button 
+        data-tab="about-carousel" 
+        onclick="window.drikaApp.setAdminTab('about-carousel')"
+        class="admin-tab-btn px-4 py-2 font-semibold text-xs rounded-xl text-stone-600 hover:bg-stone-100 transition whitespace-nowrap flex items-center gap-1.5"
+      >
+        <span>👩‍🍳 Carrossel Quem Sou Eu</span>
       </button>
       <button 
         data-tab="pix-settings" 
