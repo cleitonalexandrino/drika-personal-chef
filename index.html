@@ -451,16 +451,58 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
-        <!-- FOTO COM MOLDURA ARTESANAL -->
+        <!-- FOTO OU CARROSSEL DA SEÇÃO QUEM SOU EU -->
         <div class="lg:col-span-5 relative">
           <div class="chef-hero-img-wrap max-w-md mx-auto relative">
-            <div class="rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-stone-100 aspect-[4/5]">
-              <img 
-                id="about-chef-img"
-                src="assets/media_1790480919649.png" 
-                alt="Chef Adriana Corrêa - Drika Personal Chef" 
-                class="w-full h-full object-cover"
-              />
+            <div id="about-media-wrapper" class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-stone-900 aspect-[4/5] relative z-10 flex items-center justify-center group select-none transition-all duration-300">
+              
+              <!-- Container dos Slides do Carrossel Quem Sou Eu -->
+              <div id="about-carousel-slides" class="w-full h-full relative overflow-hidden">
+                <img 
+                  id="about-chef-img"
+                  src="assets/quem sou eu/1.jpg" 
+                  alt="Chef Adriana Corrêa - Drika Personal Chef" 
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+
+              <!-- Gradiente elegante para contraste da legenda -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none z-10"></div>
+
+              <!-- Legenda da Foto Atual -->
+              <div class="absolute bottom-5 left-5 right-5 text-white z-20 pointer-events-none transition-opacity duration-300" id="about-carousel-caption-box">
+                <span id="about-carousel-badge" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold bg-amber-400 text-stone-950 tracking-wider mb-1 shadow-sm">
+                  Chef Adriana Corrêa
+                </span>
+                <p id="about-carousel-caption" class="text-xs sm:text-sm font-serif font-bold text-stone-100 leading-snug drop-shadow-md">
+                  Cozinha com Amor, Propósito & Sabor Caseiro
+                </p>
+              </div>
+
+              <!-- Botões de Navegação Anterior / Próximo (hover) -->
+              <button 
+                id="about-carousel-prev" 
+                type="button" 
+                onclick="window.drikaApp.prevAboutSlide()" 
+                class="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md"
+                aria-label="Foto anterior"
+              >
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+              </button>
+              <button 
+                id="about-carousel-next" 
+                type="button" 
+                onclick="window.drikaApp.nextAboutSlide()" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md"
+                aria-label="Próxima foto"
+              >
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+              </button>
+
+              <!-- Indicador de Slides / Dots no Topo Direito -->
+              <div id="about-carousel-dots" class="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-xs shadow-md">
+                <!-- Dots dinâmicos -->
+              </div>
             </div>
           </div>
         </div>

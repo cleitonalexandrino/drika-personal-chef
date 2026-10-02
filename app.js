@@ -42,6 +42,9 @@
   let heroCurrentSlideIndex = 0;
   let heroCarouselTimer = null;
   let heroIsHovered = false;
+  let aboutCurrentSlideIndex = 0;
+  let aboutCarouselTimer = null;
+  let aboutIsHovered = false;
 
   // Inicialização ao carregar o DOM
   document.addEventListener("DOMContentLoaded", () => {
@@ -216,6 +219,25 @@
         if (!currentSiteImages.heroCarouselInterval) {
           currentSiteImages.heroCarouselInterval = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarouselInterval) || 4000;
         }
+        // Migração suave caso o cache local contenha caminhos antigos de assets/carrossel
+        if (currentSiteImages.heroCarousel && currentSiteImages.heroCarousel.some(s => s.url && s.url.includes("assets/carrossel"))) {
+          currentSiteImages.heroCarousel = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarousel) ? JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES.heroCarousel)) : [];
+        }
+
+        // Suporte para o Carrossel da Seção Quem Sou Eu (Sobre a Chef)
+        if (!currentSiteImages.aboutMode) {
+          currentSiteImages.aboutMode = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.aboutMode) || "carousel";
+        }
+        if (!currentSiteImages.aboutCarousel || !Array.isArray(currentSiteImages.aboutCarousel) || currentSiteImages.aboutCarousel.length === 0) {
+          currentSiteImages.aboutCarousel = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.aboutCarousel) ? JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES.aboutCarousel)) : [];
+        }
+        // Assegura carregamento das 9 fotos oficiais de assets/quem sou eu
+        if (currentSiteImages.aboutCarousel && currentSiteImages.aboutCarousel.length < 9 && typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.aboutCarousel) {
+          currentSiteImages.aboutCarousel = JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES.aboutCarousel));
+        }
+        if (!currentSiteImages.aboutCarouselInterval) {
+          currentSiteImages.aboutCarouselInterval = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.aboutCarouselInterval) || 4000;
+        }
       } else {
         currentSiteImages = typeof DEFAULT_SITE_IMAGES !== 'undefined' ? JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES)) : {};
       }
@@ -238,12 +260,8 @@
       if (currentSiteImages.logo) img.src = currentSiteImages.logo;
     });
 
-    const aboutChefImg = document.getElementById("about-chef-img");
-    if (aboutChefImg && currentSiteImages.aboutChef) {
-      aboutChefImg.src = currentSiteImages.aboutChef;
-    }
-
     renderHeroVisual();
+    renderAboutVisual();
   }
 
   // --- CARROSSEL AUTOMÁTICO DO TOPO (HERO) ---
@@ -445,6 +463,184 @@
     if (heroCarouselTimer) {
       clearInterval(heroCarouselTimer);
       heroCarouselTimer = null;
+    }
+  }
+
+  // --- CARROSSEL AUTOMÁTICO QUEM SOU EU (SOBRE A CHEF) ---
+  function renderAboutVisual() {
+    const slidesContainer = document.getElementById("about-carousel-slides");
+    const dotsContainer = document.getElementById("about-carousel-dots");
+    const prevBtn = document.getElementById("about-carousel-prev");
+    const nextBtn = document.getElementById("about-carousel-next");
+    const badgeEl = document.getElementById("about-carousel-badge");
+    const captionEl = document.getElementById("about-carousel-caption");
+    const wrapper = document.getElementById("about-media-wrapper");
+
+    if (!slidesContainer) return;
+
+    // Pausar autoplay ao passar o mouse
+    if (wrapper && !wrapper.dataset.hoverBound) {
+      wrapper.dataset.hoverBound = "true";
+      wrapper.addEventListener("mouseenter", () => {
+        aboutIsHovered = true;
+        stopAboutCarouselAutoplay();
+      });
+      wrapper.addEventListener("mouseleave", () => {
+        aboutIsHovered = false;
+        startAboutCarouselAutoplay();
+      });
+    }
+
+    // Modo Foto Única
+    if (currentSiteImages.aboutMode === "single") {
+      stopAboutCarouselAutoplay();
+      if (dotsContainer) dotsContainer.classList.add("hidden");
+      if (prevBtn) prevBtn.classList.add("hidden");
+      if (nextBtn) nextBtn.classList.add("hidden");
+      if (badgeEl) badgeEl.textContent = "Chef Adriana Corrêa";
+      if (captionEl) captionEl.textContent = "Cozinha com Amor, Propósito & Sabor Caseiro";
+
+      slidesContainer.innerHTML = `
+        <img 
+          id="about-chef-img"
+          src="${currentSiteImages.aboutChef || 'assets/media_1790480919649.png'}" 
+          alt="Chef Adriana Corrêa - Drika Personal Chef" 
+          class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+        />
+      `;
+      return;
+    }
+
+    // Modo Carrossel de Fotos Automático
+    const slides = Array.isArray(currentSiteImages.aboutCarousel) && currentSiteImages.aboutCarousel.length > 0
+      ? currentSiteImages.aboutCarousel
+      : [{ url: currentSiteImages.aboutChef || "assets/media_1790480919649.png", caption: "Chef Adriana Corrêa (Drika)" }];
+
+    if (aboutCurrentSlideIndex >= slides.length) {
+      aboutCurrentSlideIndex = 0;
+    }
+
+    slidesContainer.innerHTML = slides.map((slide, idx) => {
+      const isActive = idx === aboutCurrentSlideIndex;
+      return `
+        <div 
+          class="about-slide-item absolute inset-0 w-full h-full transition-all duration-700 ease-in-out ${isActive ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105 pointer-events-none'}"
+          data-slide-index="${idx}"
+        >
+          <img 
+            src="${slide.url}" 
+            alt="${slide.caption || 'Chef Adriana Corrêa'}" 
+            class="w-full h-full object-cover"
+            loading="${idx === 0 ? 'eager' : 'lazy'}"
+          />
+        </div>
+      `;
+    }).join("");
+
+    if (dotsContainer) {
+      if (slides.length <= 1) {
+        dotsContainer.classList.add("hidden");
+      } else {
+        dotsContainer.classList.remove("hidden");
+        dotsContainer.innerHTML = slides.map((_, idx) => `
+          <button 
+            type="button" 
+            onclick="window.drikaApp.goToAboutSlide(${idx})"
+            class="about-dot ${idx === aboutCurrentSlideIndex ? 'w-5 bg-amber-400' : 'w-2 bg-white/60 hover:bg-white'} h-2 rounded-full transition-all duration-300 cursor-pointer shadow-xs"
+            aria-label="Ir para foto ${idx + 1}"
+          ></button>
+        `).join("");
+      }
+    }
+
+    if (prevBtn && nextBtn) {
+      if (slides.length <= 1) {
+        prevBtn.classList.add("hidden");
+        nextBtn.classList.add("hidden");
+      } else {
+        prevBtn.classList.remove("hidden");
+        nextBtn.classList.remove("hidden");
+      }
+    }
+
+    updateAboutSlideInfo();
+
+    if (slides.length > 1 && !aboutIsHovered) {
+      startAboutCarouselAutoplay();
+    } else {
+      stopAboutCarouselAutoplay();
+    }
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  function updateAboutSlideInfo() {
+    const slides = Array.isArray(currentSiteImages.aboutCarousel) && currentSiteImages.aboutCarousel.length > 0
+      ? currentSiteImages.aboutCarousel
+      : [];
+    const activeSlide = slides[aboutCurrentSlideIndex];
+    const captionEl = document.getElementById("about-carousel-caption");
+
+    if (activeSlide && captionEl) {
+      captionEl.textContent = activeSlide.caption || "Chef Adriana Corrêa • Cozinha com Amor & Propósito";
+    }
+  }
+
+  function goToAboutSlide(newIndex) {
+    const slides = currentSiteImages.aboutCarousel || [];
+    if (slides.length <= 1) return;
+
+    aboutCurrentSlideIndex = (newIndex + slides.length) % slides.length;
+
+    const slideEls = document.querySelectorAll(".about-slide-item");
+    slideEls.forEach((el, idx) => {
+      if (idx === aboutCurrentSlideIndex) {
+        el.classList.remove("opacity-0", "z-0", "scale-105", "pointer-events-none");
+        el.classList.add("opacity-100", "z-10", "scale-100");
+      } else {
+        el.classList.remove("opacity-100", "z-10", "scale-100");
+        el.classList.add("opacity-0", "z-0", "scale-105", "pointer-events-none");
+      }
+    });
+
+    const dots = document.querySelectorAll(".about-dot");
+    dots.forEach((dot, idx) => {
+      if (idx === aboutCurrentSlideIndex) {
+        dot.className = "about-dot w-5 h-2 rounded-full transition-all duration-300 cursor-pointer shadow-xs bg-amber-400";
+      } else {
+        dot.className = "about-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer shadow-xs bg-white/60 hover:bg-white";
+      }
+    });
+
+    updateAboutSlideInfo();
+  }
+
+  function nextAboutSlide() {
+    const slides = currentSiteImages.aboutCarousel || [];
+    if (slides.length <= 1) return;
+    goToAboutSlide(aboutCurrentSlideIndex + 1);
+  }
+
+  function prevAboutSlide() {
+    const slides = currentSiteImages.aboutCarousel || [];
+    if (slides.length <= 1) return;
+    goToAboutSlide(aboutCurrentSlideIndex - 1);
+  }
+
+  function startAboutCarouselAutoplay() {
+    stopAboutCarouselAutoplay();
+    const interval = parseInt(currentSiteImages.aboutCarouselInterval, 10) || 4000;
+    aboutCarouselTimer = setInterval(() => {
+      nextAboutSlide();
+    }, interval);
+  }
+
+  function stopAboutCarouselAutoplay() {
+    if (aboutCarouselTimer) {
+      clearInterval(aboutCarouselTimer);
+      aboutCarouselTimer = null;
     }
   }
 
@@ -2246,17 +2442,205 @@
               `}
             </div>
 
-            <!-- Foto da Chef na Seção Sobre -->
-            <div class="p-4 rounded-2xl border border-stone-200 bg-stone-50 space-y-3">
-              <span class="text-xs font-bold text-stone-700 block">Foto da Chef ('Quem Sou Eu')</span>
-              <div class="aspect-[4/3] rounded-xl overflow-hidden bg-white border border-stone-200">
-                <img src="${currentSiteImages.aboutChef}" id="admin-site-about-preview" class="w-full h-full object-cover" />
+            <!-- Foto e Carrossel da Chef (Seção Quem Sou Eu) -->
+            <div class="p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 space-y-4 sm:col-span-2">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-200/70 pb-3">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs sm:text-sm font-bold text-earth-dark flex items-center gap-1.5">
+                      <i data-lucide="user-check" class="w-4 h-4 text-earth-olive"></i>
+                      Foto e Carrossel da Seção 'Quem Sou Eu' (Biografia da Chef)
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-950">Seção Sobre</span>
+                  </div>
+                  <p class="text-xs text-stone-600 mt-1">
+                    Exiba uma foto única ou um <strong>carrossel de fotos automático</strong> buscando imagens da pasta <code class="bg-white px-1.5 py-0.5 rounded text-emerald-800 font-mono text-[11px]">assets/quem sou eu</code>.
+                  </p>
+                </div>
+                
+                <!-- Seletor de Modo: Carrossel vs Foto Única -->
+                <div class="inline-flex p-1 bg-white rounded-xl border border-stone-200 text-xs font-semibold self-start sm:self-auto">
+                  <button 
+                    type="button"
+                    onclick="window.drikaApp.setAboutMode('carousel')"
+                    class="px-3 py-1.5 rounded-lg transition ${currentSiteImages.aboutMode !== 'single' ? 'bg-earth-olive text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'}"
+                  >
+                    🎠 Carrossel Automático
+                  </button>
+                  <button 
+                    type="button"
+                    onclick="window.drikaApp.setAboutMode('single')"
+                    class="px-3 py-1.5 rounded-lg transition ${currentSiteImages.aboutMode === 'single' ? 'bg-earth-olive text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'}"
+                  >
+                    🖼️ Foto Única
+                  </button>
+                </div>
               </div>
-              <label class="w-full cursor-pointer inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-white text-earth-olive border border-emerald-200 hover:bg-emerald-50 transition">
-                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-                <span>Enviar Nova Foto</span>
-                <input type="file" accept="image/*" class="hidden" onchange="window.drikaApp.handleSiteImageUpload(event, 'aboutChef')" />
-              </label>
+
+              ${currentSiteImages.aboutMode !== 'single' ? `
+                <!-- Configuração de Velocidade do Carrossel Quem Sou Eu -->
+                <div class="bg-white p-3.5 rounded-xl border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div class="w-full sm:w-auto">
+                    <label class="block text-xs font-bold text-stone-700 mb-0.5">
+                      ⏱️ Velocidade de Transição Automática
+                    </label>
+                    <p class="text-[10px] text-stone-500">Tempo de exibição de cada foto na seção biográfica</p>
+                  </div>
+                  <select 
+                    onchange="window.drikaApp.updateAboutCarouselInterval(this.value)"
+                    class="w-full sm:w-64 px-3 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-stone-50 focus:bg-white"
+                  >
+                    <option value="3000" ${currentSiteImages.aboutCarouselInterval == 3000 ? 'selected' : ''}>A cada 3 segundos (Mais Dinâmico)</option>
+                    <option value="4000" ${!currentSiteImages.aboutCarouselInterval || currentSiteImages.aboutCarouselInterval == 4000 ? 'selected' : ''}>A cada 4 segundos (Recomendado)</option>
+                    <option value="5000" ${currentSiteImages.aboutCarouselInterval == 5000 ? 'selected' : ''}>A cada 5 segundos</option>
+                    <option value="6000" ${currentSiteImages.aboutCarouselInterval == 6000 ? 'selected' : ''}>A cada 6 segundos (Mais Suave)</option>
+                  </select>
+                </div>
+
+                <!-- Submissão de Fotos para a Seção Quem Sou Eu -->
+                <div class="bg-white p-4 rounded-xl border border-emerald-200 space-y-3">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-xs font-bold text-earth-dark flex items-center gap-1.5">
+                      <i data-lucide="images" class="w-4 h-4 text-emerald-600"></i>
+                      Fotos do Carrossel Quem Sou Eu (Total: ${(currentSiteImages.aboutCarousel || []).length} fotos ativas)
+                    </span>
+                    <button 
+                      type="button" 
+                      onclick="window.drikaApp.resetAboutCarouselToDefault()" 
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 transition flex items-center gap-1 cursor-pointer"
+                      title="Carrega todas as fotos da pasta assets/quem sou eu"
+                    >
+                      <i data-lucide="folder-check" class="w-3 h-3"></i>
+                      <span>Buscar Todas as Fotos de assets/quem sou eu</span>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <!-- Opção 1: Selecionar Fotos da Pasta -->
+                    <label class="flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-emerald-300 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 cursor-pointer transition text-center group bg-emerald-50/20">
+                      <i data-lucide="folder-up" class="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform mb-1"></i>
+                      <span class="text-xs font-bold text-emerald-900">📁 Selecionar Fotos da Pasta</span>
+                      <span class="text-[10px] text-stone-500">Selecione fotos da Chef no computador para carregar de uma vez</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        multiple 
+                        class="hidden" 
+                        onchange="window.drikaApp.handleAboutBatchUpload(event)"
+                      />
+                    </label>
+
+                    <!-- Opção 2: Submeter Pasta Inteira de Fotos -->
+                    <label class="flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-stone-300 rounded-xl hover:border-stone-500 hover:bg-stone-50 cursor-pointer transition text-center group bg-stone-50/40">
+                      <i data-lucide="folder-archive" class="w-6 h-6 text-earth-olive group-hover:scale-110 transition-transform mb-1"></i>
+                      <span class="text-xs font-bold text-stone-800">📂 Submeter Pasta 'quem sou eu'</span>
+                      <span class="text-[10px] text-stone-500">Carrega todas as fotos contidas na pasta do seu computador</span>
+                      <input 
+                        type="file" 
+                        webkitdirectory 
+                        directory 
+                        multiple 
+                        class="hidden" 
+                        onchange="window.drikaApp.handleAboutFolderUpload(event)"
+                      />
+                    </label>
+                  </div>
+
+                  <!-- Opção 3: Adicionar Foto por Caminho ou Link -->
+                  <div class="pt-2 border-t border-stone-100 flex flex-col sm:flex-row items-center gap-2">
+                    <input 
+                      type="text" 
+                      id="admin-about-new-url"
+                      placeholder="Ou digite o caminho/link (ex: assets/quem sou eu/1.jpg)" 
+                      class="flex-1 w-full px-3 py-1.5 text-xs rounded-lg border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                    />
+                    <input 
+                      type="text" 
+                      id="admin-about-new-caption"
+                      placeholder="Legenda da foto (opcional)" 
+                      class="w-full sm:w-44 px-3 py-1.5 text-xs rounded-lg border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                    />
+                    <button 
+                      type="button" 
+                      onclick="window.drikaApp.addAboutSlideByUrl()" 
+                      class="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-earth-olive text-white text-xs font-bold hover:bg-earth-dark transition whitespace-nowrap"
+                    >
+                      ➕ Adicionar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Lista e Grade das Fotos Atuais da Seção Quem Sou Eu -->
+                <div class="space-y-2">
+                  <span class="text-xs font-bold text-stone-700 block">Fotos ativas no Carrossel 'Quem Sou Eu':</span>
+                  
+                  ${(!currentSiteImages.aboutCarousel || currentSiteImages.aboutCarousel.length === 0) ? `
+                    <div class="p-6 text-center bg-white rounded-xl border border-stone-200 text-stone-400 text-xs">
+                      Nenhuma foto cadastrada no carrossel. Clique em "Buscar Todas as Fotos de assets/quem sou eu" acima.
+                    </div>
+                  ` : `
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-80 overflow-y-auto p-1 bg-white rounded-xl border border-stone-200">
+                      ${currentSiteImages.aboutCarousel.map((slide, idx) => `
+                        <div class="p-2 rounded-lg border border-stone-200 bg-stone-50 space-y-1.5 relative group">
+                          <div class="aspect-[4/3] rounded-md overflow-hidden bg-stone-200 relative">
+                            <img src="${slide.url}" alt="${slide.caption || 'Foto Chef ' + (idx + 1)}" class="w-full h-full object-cover" />
+                            <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-black/60 text-white">#${idx + 1}</span>
+                          </div>
+                          <div>
+                            <input 
+                              type="text" 
+                              value="${slide.caption || ''}" 
+                              placeholder="Legenda da foto..."
+                              title="Altere a legenda e clique fora para salvar"
+                              onchange="window.drikaApp.updateAboutSlideCaption(${idx}, this.value)"
+                              class="w-full px-1.5 py-1 text-[11px] rounded border border-stone-300 focus:outline-hidden text-stone-800 bg-white"
+                            />
+                          </div>
+                          <div class="flex items-center justify-between pt-0.5">
+                            <button 
+                              type="button" 
+                              onclick="window.drikaApp.moveAboutSlideUp(${idx})" 
+                              class="p-1 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-200 text-[10px] ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}"
+                              title="Mover para esquerda"
+                            >
+                              ⬅️
+                            </button>
+                            <button 
+                              type="button" 
+                              onclick="window.drikaApp.removeAboutSlide(${idx})" 
+                              class="px-2 py-0.5 rounded bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-bold transition"
+                              title="Remover do carrossel"
+                            >
+                              🗑️ Excluir
+                            </button>
+                            <button 
+                              type="button" 
+                              onclick="window.drikaApp.moveAboutSlideDown(${idx})" 
+                              class="p-1 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-200 text-[10px] ${idx === (currentSiteImages.aboutCarousel.length - 1) ? 'opacity-30 pointer-events-none' : ''}"
+                              title="Mover para direita"
+                            >
+                              ➡️
+                            </button>
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  `}
+                </div>
+              ` : `
+                <!-- Modo Foto Única Quem Sou Eu -->
+                <div class="p-4 rounded-xl border border-stone-200 bg-white space-y-3 max-w-sm">
+                  <span class="text-xs font-bold text-stone-700 block">Preview da Foto Única da Seção Sobre:</span>
+                  <div class="aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+                    <img src="${currentSiteImages.aboutChef || 'assets/media_1790480919649.png'}" id="admin-site-about-preview" class="w-full h-full object-cover" />
+                  </div>
+                  <label class="w-full cursor-pointer inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-white text-earth-olive border border-emerald-200 hover:bg-emerald-50 transition">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <span>Substituir Foto Única</span>
+                    <input type="file" accept="image/*" class="hidden" onchange="window.drikaApp.handleSiteImageUpload(event, 'aboutChef')" />
+                  </label>
+                </div>
+              `}
             </div>
 
             <!-- Panfleto Low Carb -->
@@ -2725,6 +3109,146 @@
     }
   }
 
+  // --- GERENCIAMENTO DO CARROSSEL QUEM SOU EU (PAINEL DA CHEF) ---
+  function setAboutMode(mode) {
+    currentSiteImages.aboutMode = mode;
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast(mode === 'carousel' ? "🎠 Modo Carrossel ativado na seção Quem Sou Eu!" : "🖼️ Modo Foto Única ativado na seção Quem Sou Eu!");
+  }
+
+  function updateAboutCarouselInterval(val) {
+    const parsed = parseInt(val, 10) || 4000;
+    currentSiteImages.aboutCarouselInterval = parsed;
+    saveSiteImages();
+    startAboutCarouselAutoplay();
+    showToast(`Tempo de transição da seção Quem Sou Eu ajustado para ${parsed / 1000}s! ⏱️`);
+  }
+
+  async function handleAboutBatchUpload(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const imageFiles = files.filter(f => f.type.startsWith("image/") || /\.(jpe?g|png|webp|avif)$/i.test(f.name));
+    if (imageFiles.length === 0) {
+      alert("Nenhum arquivo de imagem válido foi selecionado. Por favor, envie arquivos JPG, PNG ou WebP.");
+      return;
+    }
+
+    showToast(`Processando ${imageFiles.length} foto(s) para a seção Quem Sou Eu... ⏳`);
+
+    if (!Array.isArray(currentSiteImages.aboutCarousel)) {
+      currentSiteImages.aboutCarousel = [];
+    }
+
+    let addedCount = 0;
+    for (const file of imageFiles) {
+      try {
+        const dataUrl = await processImageFile(file, 1000, 1000, 0.85);
+        const rawName = file.name.replace(/\.[^/.]+$/, "").replace(/^\d+[\.\-\s_]*/, "").trim();
+        const caption = rawName ? (rawName.charAt(0).toUpperCase() + rawName.slice(1)) : "Chef Adriana Corrêa";
+        
+        currentSiteImages.aboutCarousel.push({
+          url: dataUrl,
+          caption: caption
+        });
+        addedCount++;
+      } catch (err) {
+        console.error("Erro ao comprimir imagem:", file.name, err);
+      }
+    }
+
+    currentSiteImages.aboutMode = "carousel";
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast(`🎉 ${addedCount} foto(s) adicionadas com sucesso à seção Quem Sou Eu!`);
+  }
+
+  async function handleAboutFolderUpload(e) {
+    await handleAboutBatchUpload(e);
+  }
+
+  function addAboutSlideByUrl() {
+    const urlInput = document.getElementById("admin-about-new-url");
+    const captionInput = document.getElementById("admin-about-new-caption");
+    if (!urlInput) return;
+
+    const url = urlInput.value.trim();
+    if (!url) {
+      alert("Por favor, digite o caminho da foto ou link.");
+      urlInput.focus();
+      return;
+    }
+
+    const caption = captionInput && captionInput.value.trim() ? captionInput.value.trim() : "Chef Adriana Corrêa";
+
+    if (!Array.isArray(currentSiteImages.aboutCarousel)) {
+      currentSiteImages.aboutCarousel = [];
+    }
+
+    currentSiteImages.aboutCarousel.push({
+      url: url,
+      caption: caption
+    });
+
+    currentSiteImages.aboutMode = "carousel";
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast("Foto adicionada à seção Quem Sou Eu! ✨");
+  }
+
+  function updateAboutSlideCaption(idx, caption) {
+    if (currentSiteImages.aboutCarousel && currentSiteImages.aboutCarousel[idx]) {
+      currentSiteImages.aboutCarousel[idx].caption = caption;
+      saveSiteImages();
+      updateAboutSlideInfo();
+    }
+  }
+
+  function removeAboutSlide(idx) {
+    if (!currentSiteImages.aboutCarousel || !currentSiteImages.aboutCarousel[idx]) return;
+    const confirmDel = confirm("Deseja realmente remover esta foto da seção Quem Sou Eu?");
+    if (!confirmDel) return;
+
+    currentSiteImages.aboutCarousel.splice(idx, 1);
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast("Foto removida da seção Quem Sou Eu.");
+  }
+
+  function moveAboutSlideUp(idx) {
+    if (idx <= 0 || !currentSiteImages.aboutCarousel) return;
+    const item = currentSiteImages.aboutCarousel.splice(idx, 1)[0];
+    currentSiteImages.aboutCarousel.splice(idx - 1, 0, item);
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+  }
+
+  function moveAboutSlideDown(idx) {
+    if (!currentSiteImages.aboutCarousel || idx >= currentSiteImages.aboutCarousel.length - 1) return;
+    const item = currentSiteImages.aboutCarousel.splice(idx, 1)[0];
+    currentSiteImages.aboutCarousel.splice(idx + 1, 0, item);
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+  }
+
+  function resetAboutCarouselToDefault() {
+    if (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.aboutCarousel) {
+      currentSiteImages.aboutCarousel = JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES.aboutCarousel));
+      currentSiteImages.aboutMode = "carousel";
+      saveSiteImages();
+      renderSiteImages();
+      renderAdminContent();
+      showToast("9 fotos oficiais de assets/quem sou eu carregadas com sucesso! 👩‍🍳");
+    }
+  }
+
   function exportDataAsJSON() {
     const exportObject = {
       menu: currentMenuData,
@@ -2947,6 +3471,19 @@
     prevHeroSlide,
     goToHeroSlide,
     resetHeroCarouselToDefault,
+    setAboutMode,
+    updateAboutCarouselInterval,
+    handleAboutBatchUpload,
+    handleAboutFolderUpload,
+    addAboutSlideByUrl,
+    updateAboutSlideCaption,
+    removeAboutSlide,
+    moveAboutSlideUp,
+    moveAboutSlideDown,
+    nextAboutSlide,
+    prevAboutSlide,
+    goToAboutSlide,
+    resetAboutCarouselToDefault,
     handleSavePixSettings,
     handleChangePassword,
     exportDataAsJSON,

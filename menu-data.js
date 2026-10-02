@@ -321,19 +321,28 @@ const DEFAULT_SITE_IMAGES = {
   heroMode: "carousel", // 'carousel' ou 'single'
   heroChef: "assets/CHEF.jpg",
   heroCarousel: [
-    { url: "assets/carrossel/1.jpg", caption: "Lasanha Artesanal Gratinada", tag: "Low Carb" },
-    { url: "assets/carrossel/2.jpg", caption: "Filé de Frango Suculento com Legumes", tag: "Fit & Saudável" },
-    { url: "assets/carrossel/3.jpg", caption: "Carne Moída Especial com Cenoura e Vagem", tag: "Prato da Semana" },
-    { url: "assets/carrossel/4.jpg", caption: "Refeição Nutritiva e Balanceada", tag: "Tradicional & Fit" },
-    { url: "assets/carrossel/5.jpg", caption: "Marmitas Congeladas Prontas para o Dia a Dia", tag: "Praticidade" },
-    { url: "assets/carrossel/6.jpg", caption: "Opção Equilibrada com Tempero Natural", tag: "Comida Caseira" },
-    { url: "assets/carrossel/7.jpg", caption: "Combinações Saudáveis e Saborosas", tag: "Nutrição Ativa" },
-    { url: "assets/carrossel/8.jpg", caption: "Cozinha Afetiva da Chef Adriana Corrêa", tag: "Personal Chef" },
-    { url: "assets/carrossel/9.jpg", caption: "Kits Semanais com Desconto Exclusivo", tag: "Kits Semanais" }
+    { url: "assets/refeicoes/CARNE MOIDA TEMPERADA COM LEGUMES.jpg", caption: "Carne Moída Temperada com Legumes Selecionados", tag: "Prato da Semana" },
+    { url: "assets/refeicoes/FILE DE SOBRECOXA.jpg", caption: "Filé de Sobrecoxa Dourada com Purê e Legumes", tag: "Fit & Saudável" },
+    { url: "assets/refeicoes/1. lasanha de beringela.jpg", caption: "Lasanha de Beringela Artesanal Gratinada", tag: "Low Carb" },
+    { url: "assets/CHEF.jpg", caption: "Chef Adriana Corrêa • Cozinha Afetiva & Nutritiva", tag: "Personal Chef" },
+    { url: "assets/PODCAST.jpg", caption: "Chef Drika no Podcast • Gastronomia Saudável", tag: "Na Mídia" }
   ],
   heroCarouselSubject: "Pratos Selecionados da Semana",
   heroCarouselInterval: 4000,
-  aboutChef: "assets/media_1790480919649.png",
+  aboutMode: "carousel", // 'carousel' ou 'single'
+  aboutChef: "assets/quem sou eu/1.jpg",
+  aboutCarousel: [
+    { url: "assets/quem sou eu/1.jpg", caption: "Chef Adriana Corrêa (Drika) • Cozinha com Amor & Propósito" },
+    { url: "assets/quem sou eu/2.jpg", caption: "Dedicação e Amor em Cada Refeição Preparada" },
+    { url: "assets/quem sou eu/3.jpg", caption: "Ingredientes Selecionados, Frescos e Naturais" },
+    { url: "assets/quem sou eu/4.jpg", caption: "Sabor Caseiro de Verdade com Técnica Gastronômica" },
+    { url: "assets/quem sou eu/5.jpg", caption: "Praticidade e Nutrição para o Seu Dia a Dia" },
+    { url: "assets/quem sou eu/6.jpg", caption: "Cardápios Balanceados Low Carb & Tradicional Fit" },
+    { url: "assets/quem sou eu/7.jpg", caption: "Cozinha Afetiva e Gastronomia Funcional" },
+    { url: "assets/quem sou eu/8.jpg", caption: "Direto da Horta para a Sua Mesa com Muito Carinho" },
+    { url: "assets/quem sou eu/9.jpg", caption: "Chef Adriana Corrêa • Personal Chef & Marmitas Congeladas" }
+  ],
+  aboutCarouselInterval: 4000,
   flyerLowCarb: "assets/cardapio-low-carb.jpg",
   flyerTradicionalFit: "assets/cardapio-tradicional-fit.jpg"
 };
