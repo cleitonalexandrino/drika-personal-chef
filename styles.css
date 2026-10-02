@@ -122,3 +122,52 @@ h1, h2, h3, h4, .font-serif-title {
   box-shadow: 0 0 0 3px rgba(56, 79, 50, 0.15);
   outline: none;
 }
+
+/* ======================================================== */
+/* OTIMIZAÇÕES DE RESPONSIVIDADE (CELULARES, TABLETS E PC)   */
+/* ======================================================== */
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  width: 100%;
+  min-width: 320px;
+}
+
+/* Alvos de toque acessíveis para celulares e tablets */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scroll horizontal suave com momentum em dispositivos móveis */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Moldura orgânica da foto da Chef responsiva */
+@media (max-width: 640px) {
+  .chef-hero-img-wrap::before {
+    top: -6px;
+    left: -6px;
+    right: 6px;
+    bottom: 6px;
+    border-radius: 20px;
+  }
+}
+
+/* Ajuste fino para telas ultra-pequenas (<= 375px) */
+@media (max-width: 375px) {
+  .font-serif-title {
+    word-break: break-word;
+  }
+}
+

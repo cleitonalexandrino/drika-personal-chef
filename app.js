@@ -154,9 +154,15 @@
       const saved = localStorage.getItem(MENU_STORAGE_KEY);
       if (saved) {
         currentMenuData = JSON.parse(saved);
-        // Garante que cada item tenha o campo active (padrão true se indefinido)
+        // Garante que cada item tenha o campo active e atualiza foto caso ainda esteja com o logo padrão
         currentMenuData.forEach((item) => {
           if (item.active === undefined) item.active = true;
+          if (item.image === "assets/logo.jpg") {
+            const defItem = DEFAULT_MENU_DATA.find((d) => d.id === item.id);
+            if (defItem && defItem.image && defItem.image !== "assets/logo.jpg") {
+              item.image = defItem.image;
+            }
+          }
         });
       } else {
         currentMenuData = JSON.parse(JSON.stringify(DEFAULT_MENU_DATA));
@@ -3841,6 +3847,47 @@
         });
       });
     }
+
+    // Suporte a gestos touch (swipe horizontal) para celulares e tablets nos carrosséis
+    setupTouchSwipe("hero-media-wrapper", prevHeroSlide, nextHeroSlide);
+    setupTouchSwipe("about-media-wrapper", prevAboutSlide, nextAboutSlide);
+  }
+
+  // --- GESTOS TOUCH (SWIPE) PARA CELULARES E TABLETS ---
+  function setupTouchSwipe(elementId, prevFn, nextFn) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    let startX = 0;
+    let startY = 0;
+    let endX = 0;
+    let endY = 0;
+    const threshold = 35; // distância mínima em pixels para ativar swipe
+
+    el.addEventListener("touchstart", (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      endX = startX;
+      endY = startY;
+    }, { passive: true });
+
+    el.addEventListener("touchmove", (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      endX = e.touches[0].clientX;
+      endY = e.touches[0].clientY;
+    }, { passive: true });
+
+    el.addEventListener("touchend", () => {
+      const diffX = endX - startX;
+      const diffY = endY - startY;
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+        if (diffX < 0) {
+          nextFn(); // Deslizar para a esquerda -> próximo slide
+        } else {
+          prevFn(); // Deslizar para a direita -> slide anterior
+        }
+      }
+    }, { passive: true });
   }
 
   // --- NOTIFICAÇÃO TOAST ---
