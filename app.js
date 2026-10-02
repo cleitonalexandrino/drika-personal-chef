@@ -154,12 +154,13 @@
       const saved = localStorage.getItem(MENU_STORAGE_KEY);
       if (saved) {
         currentMenuData = JSON.parse(saved);
-        // Garante que cada item tenha o campo active e atualiza foto caso ainda esteja com o logo padrão
+        // Garante que cada item tenha o campo active e atualiza foto caso ainda esteja com o logo padrão ou caminho quebrado em celulares
         currentMenuData.forEach((item) => {
           if (item.active === undefined) item.active = true;
-          if (item.image === "assets/logo.jpg") {
-            const defItem = DEFAULT_MENU_DATA.find((d) => d.id === item.id);
-            if (defItem && defItem.image && defItem.image !== "assets/logo.jpg") {
+          const defItem = (typeof DEFAULT_MENU_DATA !== 'undefined' ? DEFAULT_MENU_DATA : []).find((d) => d.id === item.id);
+          if (defItem) {
+            // Se o item em cache estiver com caminho de logo ou imagem inexistente, sincroniza com a imagem padrão real
+            if (!item.image || item.image.toLowerCase().includes("logo.jpg") || item.image.includes("assets/1. lasanha de berinjela.jpg") || item.image === "assets/logo.jpg") {
               item.image = defItem.image;
             }
           }
@@ -192,6 +193,13 @@
       const saved = localStorage.getItem(MEDIA_STORAGE_KEY);
       if (saved) {
         currentMediaData = JSON.parse(saved);
+        // Garante que fotos da mídia não fiquem quebradas caso estejam com o logo antigo em cache
+        currentMediaData.forEach((m) => {
+          const defMedia = (typeof DEFAULT_MEDIA_DATA !== 'undefined' ? DEFAULT_MEDIA_DATA : []).find((d) => d.id === m.id);
+          if (defMedia && (!m.image || m.image.toLowerCase().includes("logo.jpg") || m.image === "assets/logo.jpg")) {
+            m.image = defMedia.image;
+          }
+        });
       } else {
         currentMediaData = JSON.parse(JSON.stringify(DEFAULT_MEDIA_DATA));
       }
@@ -213,6 +221,12 @@
       const saved = localStorage.getItem(SITE_IMAGES_STORAGE_KEY);
       if (saved) {
         currentSiteImages = JSON.parse(saved);
+        if (!currentSiteImages.logo || currentSiteImages.logo.toLowerCase() === "assets/logo.jpg") {
+          currentSiteImages.logo = "assets/LOGO.jpg";
+        }
+        if (!currentSiteImages.heroChef || currentSiteImages.heroChef.toLowerCase() === "assets/chef.jpg") {
+          currentSiteImages.heroChef = "assets/CHEF.jpg";
+        }
         if (!currentSiteImages.heroMode) {
           currentSiteImages.heroMode = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroMode) || "carousel";
         }
@@ -314,6 +328,7 @@
           src="${currentSiteImages.heroChef || 'assets/CHEF.jpg'}" 
           alt="Chef Adriana Corrêa - Drika Personal Chef" 
           class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+          onerror="this.onerror=null; this.src='assets/CHEF.jpg';"
         />
       `;
       return;
@@ -340,6 +355,7 @@
             alt="${slide.caption || 'Drika Personal Chef'}" 
             class="w-full h-full object-cover"
             loading="${idx === 0 ? 'eager' : 'lazy'}"
+            onerror="this.onerror=null; this.src='assets/CHEF.jpg';"
           />
         </div>
       `;
@@ -509,9 +525,10 @@
       slidesContainer.innerHTML = `
         <img 
           id="about-chef-img"
-          src="${currentSiteImages.aboutChef || 'assets/media_1790480919649.png'}" 
+          src="${currentSiteImages.aboutChef || 'assets/quem sou eu/1.jpg'}" 
           alt="Chef Adriana Corrêa - Drika Personal Chef" 
           class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+          onerror="this.onerror=null; this.src='assets/CHEF.jpg';"
         />
       `;
       return;
@@ -520,7 +537,7 @@
     // Modo Carrossel de Fotos Automático
     const slides = Array.isArray(currentSiteImages.aboutCarousel) && currentSiteImages.aboutCarousel.length > 0
       ? currentSiteImages.aboutCarousel
-      : [{ url: currentSiteImages.aboutChef || "assets/media_1790480919649.png", caption: "Chef Adriana Corrêa (Drika)" }];
+      : [{ url: currentSiteImages.aboutChef || "assets/quem sou eu/1.jpg", caption: "Chef Adriana Corrêa (Drika)" }];
 
     if (aboutCurrentSlideIndex >= slides.length) {
       aboutCurrentSlideIndex = 0;
@@ -538,6 +555,7 @@
             alt="${slide.caption || 'Chef Adriana Corrêa'}" 
             class="w-full h-full object-cover"
             loading="${idx === 0 ? 'eager' : 'lazy'}"
+            onerror="this.onerror=null; this.src='assets/CHEF.jpg';"
           />
         </div>
       `;
@@ -763,6 +781,7 @@
               alt="${item.title}" 
               class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
+              onerror="this.onerror=null; this.src='assets/LOGO.jpg';"
             />
             
             <!-- Tags flutuantes -->
@@ -1387,7 +1406,7 @@
         return `
         <div class="bg-white rounded-3xl overflow-hidden border border-[#E8E2D6] shadow-sm flex flex-col justify-between card-hover-effect">
           <div class="aspect-video relative overflow-hidden bg-stone-100 group">
-            <img src="${m.image}" alt="${m.title}" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
+            <img src="${m.image}" alt="${m.title}" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" onerror="this.onerror=null; this.src='assets/LOGO.jpg';" />
             <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/90 text-stone-800 backdrop-blur-sm shadow-sm">
               ${m.tag}
             </span>
@@ -3362,7 +3381,7 @@
       return;
     }
 
-    const finalImage = newDishImageData || urlInput || "assets/logo.jpg";
+    const finalImage = newDishImageData || urlInput || "assets/LOGO.jpg";
     const tags = tagsRaw
       ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
       : ["Novidade da Chef", "Saudável"];

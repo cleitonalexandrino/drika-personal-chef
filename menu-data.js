@@ -254,7 +254,7 @@ const DEFAULT_MENU_DATA = [
     category: "produtos",
     categoryName: "Produtos Artesanais da Horta",
     price: 28.00,
-    image: "assets/logo.jpg",
+    image: "assets/Pickled_vegetables_in_glass_jars_2K_20261002192115.jpg",
     tags: ["100% Fruta", "Sem Conservantes", "Edição Limitada"],
     description: "Produzida com jabuticabas frescas colhidas na horta urbana, cozimento lento e toque sutil de especiarias. Pote de vidro 240g.",
     portion: "240g",
@@ -266,7 +266,7 @@ const DEFAULT_MENU_DATA = [
     category: "produtos",
     categoryName: "Produtos Artesanais da Horta",
     price: 26.00,
-    image: "assets/logo.jpg",
+    image: "assets/Pickled_vegetables_in_glass_jars_2K_20261002192115.jpg",
     tags: ["Receita Exclusiva", "Agridoce", "Famosa da Chef"],
     description: "A famosa receita autoral da Chef Adriana! Feita com jiló fresco selecionado, especiarias nobres e redução suave. Surpreendente e deliciosa.",
     portion: "220g",
@@ -278,7 +278,7 @@ const DEFAULT_MENU_DATA = [
     category: "produtos",
     categoryName: "Produtos Artesanais da Horta",
     price: 32.00,
-    image: "assets/logo.jpg",
+    image: "assets/Pickled_vegetables_in_glass_jars_2K_20261002192115.jpg",
     tags: ["PANC", "Superfood", "Azeite Extravirgem"],
     description: "Pesto fresco à base de folhas jovens de ora-pro-nóbis da horta, castanha de caju brasileira, queijo curado artesanal e azeite extravirgem.",
     portion: "200g",
@@ -295,7 +295,7 @@ const DEFAULT_MENU_DATA = [
     categoryName: "Serviços de Personal Chef & Eventos",
     price: 180.00,
     priceUnit: "por pessoa (mín. 4 pessoas)",
-    image: "assets/logo.jpg",
+    image: "assets/Chef_plating_gourmet_meal_2K_20261002191534.jpg",
     tags: ["Experiência VIP", "Chef na sua Cozinha", "Menu Personalizado"],
     description: "A Chef Adriana vai até a sua residência para preparar um almoço ou jantar inesquecível. Inclui compras dos melhores ingredientes, pré-preparo, serviço e cozinha impecável.",
     portion: "Menu Personalizado",
@@ -307,7 +307,7 @@ const DEFAULT_MENU_DATA = [
     category: "personalchef",
     categoryName: "Serviços de Personal Chef & Eventos",
     price: 350.00,
-    image: "assets/logo.jpg",
+    image: "assets/Woman_presenting_healthy_meal_prep_2K_20261002185131.jpg",
     tags: ["Nutrição Personalizada", "Semana Completa", "Praticidade"],
     description: "Elaboração de cardápio semanal exclusivo de acordo com sua dieta ou recomendação médica, preparo e entrega das refeições porcionadas e etiquetadas.",
     portion: "Pacote 10 marmitas personalizadas",
@@ -388,7 +388,7 @@ const DEFAULT_MEDIA_DATA = [
     desc: "A Chef Adriana Corrêa compartilhou sua história de vida e ensinou segredos da culinária com PANCs e gastronomia afetiva.\n\n📺 Ao vivo no YouTube – Parla Podcast\n🎙️ Apresentação: Leo Cardi & Hugo Martinelli\nhttps://www.youtube.com/watch?v=OnMrlKMM8ug",
     tag: "Podcast & Vídeo",
     linkUrl: "https://www.youtube.com/watch?v=OnMrlKMM8ug",
-    image: "assets/logo.jpg"
+    image: "assets/PODCAST.jpg"
   },
   {
     id: "media-02",
@@ -397,6 +397,6 @@ const DEFAULT_MEDIA_DATA = [
     desc: "Demonstração prática de gastronomia saudável na televisão com receitas autorais colhidas diretamente da horta.",
     tag: "Televisão",
     linkUrl: "",
-    image: "assets/logo.jpg"
+    image: "assets/media_1790480919649.png"
   }
 ];
