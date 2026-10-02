@@ -315,10 +315,24 @@ const DEFAULT_MENU_DATA = [
   }
 ];
 
-// Imagens Institucionais Padrão
+// Imagens Institucionais Padrão com Suporte a Carrossel Automático
 const DEFAULT_SITE_IMAGES = {
-  logo: "assets/logo.jpg",
-  heroChef: "assets/logo.jpg",
+  logo: "assets/LOGO.jpg",
+  heroMode: "carousel", // 'carousel' ou 'single'
+  heroChef: "assets/CHEF.jpg",
+  heroCarousel: [
+    { url: "assets/carrossel/1.jpg", caption: "Lasanha Artesanal Gratinada", tag: "Low Carb" },
+    { url: "assets/carrossel/2.jpg", caption: "Filé de Frango Suculento com Legumes", tag: "Fit & Saudável" },
+    { url: "assets/carrossel/3.jpg", caption: "Carne Moída Especial com Cenoura e Vagem", tag: "Prato da Semana" },
+    { url: "assets/carrossel/4.jpg", caption: "Refeição Nutritiva e Balanceada", tag: "Tradicional & Fit" },
+    { url: "assets/carrossel/5.jpg", caption: "Marmitas Congeladas Prontas para o Dia a Dia", tag: "Praticidade" },
+    { url: "assets/carrossel/6.jpg", caption: "Opção Equilibrada com Tempero Natural", tag: "Comida Caseira" },
+    { url: "assets/carrossel/7.jpg", caption: "Combinações Saudáveis e Saborosas", tag: "Nutrição Ativa" },
+    { url: "assets/carrossel/8.jpg", caption: "Cozinha Afetiva da Chef Adriana Corrêa", tag: "Personal Chef" },
+    { url: "assets/carrossel/9.jpg", caption: "Kits Semanais com Desconto Exclusivo", tag: "Kits Semanais" }
+  ],
+  heroCarouselSubject: "Pratos Selecionados da Semana",
+  heroCarouselInterval: 4000,
   aboutChef: "assets/media_1790480919649.png",
   flyerLowCarb: "assets/cardapio-low-carb.jpg",
   flyerTradicionalFit: "assets/cardapio-tradicional-fit.jpg"

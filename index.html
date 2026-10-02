@@ -225,23 +225,66 @@
 
         </div>
 
-        <!-- HERO IMAGES & CHEF CARD -->
+        <!-- HERO IMAGES & CHEF CAROUSEL CARD -->
         <div class="lg:col-span-5 relative">
           <div class="relative mx-auto max-w-md">
             
-            <!-- Imagem Principal da Chef / Logo -->
-            <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white relative z-10 bg-white aspect-[4/5] flex items-center justify-center">
-              <img 
-                id="hero-chef-img"
-                src="assets/logo.jpg" 
-                alt="Chef Adriana Corrêa - Drika Personal Chef" 
-                class="w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent"></div>
-              <div class="absolute bottom-5 left-5 right-5 text-white">
-                <span class="text-xs uppercase font-bold text-amber-300 tracking-wider">Cozinha Afetiva & Natural</span>
-                <p class="font-serif text-lg font-bold">"Cuidar de si começa pelo que come."</p>
-                <p class="text-xs text-stone-300 font-light">— Chef Adriana Corrêa (Drika)</p>
+            <!-- Card Principal com Carrossel Automático ou Foto Única -->
+            <div id="hero-media-wrapper" class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white relative z-10 bg-stone-900 aspect-[4/5] flex items-center justify-center group select-none transition-all duration-300">
+              
+              <!-- Container de Slides do Carrossel (injetado dinamicamente via renderHeroVisual) -->
+              <div id="hero-carousel-slides" class="w-full h-full relative overflow-hidden">
+                <img 
+                  id="hero-chef-img"
+                  src="assets/1. lasanha de berinjela.jpg" 
+                  alt="Drika Personal Chef" 
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+
+              <!-- Gradiente elegante para leitura dos textos -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none z-10"></div>
+
+              <!-- Assunto e Legenda da Foto Ativa -->
+              <div class="absolute bottom-5 left-5 right-5 text-white z-20 pointer-events-none transition-opacity duration-300" id="hero-carousel-caption-box">
+                <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <span id="hero-carousel-subject-badge" class="px-2.5 py-0.5 rounded-full text-[11px] uppercase font-bold bg-amber-400 text-stone-950 tracking-wider shadow-sm">
+                    Cozinha Afetiva & Natural
+                  </span>
+                  <span id="hero-carousel-tag-badge" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-700 text-emerald-100 shadow-sm hidden">
+                  </span>
+                </div>
+                <h4 id="hero-carousel-title" class="font-serif text-lg sm:text-xl font-bold leading-snug drop-shadow-md">
+                  Drika Personal Chef
+                </h4>
+                <p id="hero-carousel-subtitle" class="text-xs text-stone-300 font-light mt-0.5 drop-shadow-sm">
+                  Chef Adriana Corrêa • Pratos Saudáveis & Artesanais
+                </p>
+              </div>
+
+              <!-- Botões de Navegação Anterior / Próximo (hover) -->
+              <button 
+                id="hero-carousel-prev" 
+                type="button" 
+                onclick="window.drikaApp.prevHeroSlide()" 
+                class="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md"
+                aria-label="Foto anterior"
+              >
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+              </button>
+              <button 
+                id="hero-carousel-next" 
+                type="button" 
+                onclick="window.drikaApp.nextHeroSlide()" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md"
+                aria-label="Próxima foto"
+              >
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+              </button>
+
+              <!-- Indicador de Slides / Dots no Topo Direito -->
+              <div id="hero-carousel-dots" class="absolute top-4 right-4 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-xs shadow-md">
+                <!-- Dots dinâmicos -->
               </div>
             </div>
 
@@ -430,7 +473,7 @@
           </div>
 
           <h2 class="text-3xl sm:text-4xl font-bold font-serif-title text-earth-dark leading-tight">
-            "Cuidar de si começa pelo que come."
+            Comida Saudável com Sabor de Verdade & Afeto
           </h2>
 
           <div class="space-y-4 text-stone-600 text-sm sm:text-base leading-relaxed">

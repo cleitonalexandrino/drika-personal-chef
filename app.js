@@ -39,6 +39,9 @@
   let isAuthenticated = false;
   let editingItemId = null;
   let editingMediaId = null;
+  let heroCurrentSlideIndex = 0;
+  let heroCarouselTimer = null;
+  let heroIsHovered = false;
 
   // Inicialização ao carregar o DOM
   document.addEventListener("DOMContentLoaded", () => {
@@ -201,11 +204,23 @@
       const saved = localStorage.getItem(SITE_IMAGES_STORAGE_KEY);
       if (saved) {
         currentSiteImages = JSON.parse(saved);
+        if (!currentSiteImages.heroMode) {
+          currentSiteImages.heroMode = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroMode) || "carousel";
+        }
+        if (!currentSiteImages.heroCarousel || !Array.isArray(currentSiteImages.heroCarousel) || currentSiteImages.heroCarousel.length === 0) {
+          currentSiteImages.heroCarousel = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarousel) ? JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES.heroCarousel)) : [];
+        }
+        if (!currentSiteImages.heroCarouselSubject) {
+          currentSiteImages.heroCarouselSubject = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarouselSubject) || "Pratos Selecionados da Semana";
+        }
+        if (!currentSiteImages.heroCarouselInterval) {
+          currentSiteImages.heroCarouselInterval = (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarouselInterval) || 4000;
+        }
       } else {
-        currentSiteImages = JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES));
+        currentSiteImages = typeof DEFAULT_SITE_IMAGES !== 'undefined' ? JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES)) : {};
       }
     } catch (e) {
-      currentSiteImages = JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES));
+      currentSiteImages = typeof DEFAULT_SITE_IMAGES !== 'undefined' ? JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES)) : {};
     }
   }
 
@@ -223,14 +238,213 @@
       if (currentSiteImages.logo) img.src = currentSiteImages.logo;
     });
 
-    const heroChefImg = document.getElementById("hero-chef-img");
-    if (heroChefImg && currentSiteImages.heroChef) {
-      heroChefImg.src = currentSiteImages.heroChef;
-    }
-
     const aboutChefImg = document.getElementById("about-chef-img");
     if (aboutChefImg && currentSiteImages.aboutChef) {
       aboutChefImg.src = currentSiteImages.aboutChef;
+    }
+
+    renderHeroVisual();
+  }
+
+  // --- CARROSSEL AUTOMÁTICO DO TOPO (HERO) ---
+  function renderHeroVisual() {
+    const slidesContainer = document.getElementById("hero-carousel-slides");
+    const dotsContainer = document.getElementById("hero-carousel-dots");
+    const prevBtn = document.getElementById("hero-carousel-prev");
+    const nextBtn = document.getElementById("hero-carousel-next");
+    const subjectBadge = document.getElementById("hero-carousel-subject-badge");
+    const tagBadge = document.getElementById("hero-carousel-tag-badge");
+    const titleEl = document.getElementById("hero-carousel-title");
+    const subtitleEl = document.getElementById("hero-carousel-subtitle");
+    const wrapper = document.getElementById("hero-media-wrapper");
+
+    if (!slidesContainer) return;
+
+    // Pausar autoplay ao passar o mouse
+    if (wrapper && !wrapper.dataset.hoverBound) {
+      wrapper.dataset.hoverBound = "true";
+      wrapper.addEventListener("mouseenter", () => {
+        heroIsHovered = true;
+        stopHeroCarouselAutoplay();
+      });
+      wrapper.addEventListener("mouseleave", () => {
+        heroIsHovered = false;
+        startHeroCarouselAutoplay();
+      });
+    }
+
+    // Modo Foto Única
+    if (currentSiteImages.heroMode === "single") {
+      stopHeroCarouselAutoplay();
+      if (dotsContainer) dotsContainer.classList.add("hidden");
+      if (prevBtn) prevBtn.classList.add("hidden");
+      if (nextBtn) nextBtn.classList.add("hidden");
+      if (subjectBadge) subjectBadge.textContent = "Chef Adriana Corrêa";
+      if (tagBadge) tagBadge.classList.add("hidden");
+      if (titleEl) titleEl.textContent = "Drika Personal Chef";
+      if (subtitleEl) subtitleEl.textContent = "Cozinha Afetiva, Saudável & Natural";
+
+      slidesContainer.innerHTML = `
+        <img 
+          id="hero-chef-img"
+          src="${currentSiteImages.heroChef || 'assets/CHEF.jpg'}" 
+          alt="Chef Adriana Corrêa - Drika Personal Chef" 
+          class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+        />
+      `;
+      return;
+    }
+
+    // Modo Carrossel de Fotos Automático
+    const slides = Array.isArray(currentSiteImages.heroCarousel) && currentSiteImages.heroCarousel.length > 0
+      ? currentSiteImages.heroCarousel
+      : [{ url: currentSiteImages.heroChef || "assets/CHEF.jpg", caption: "Chef Adriana Corrêa", tag: "Personal Chef" }];
+
+    if (heroCurrentSlideIndex >= slides.length) {
+      heroCurrentSlideIndex = 0;
+    }
+
+    slidesContainer.innerHTML = slides.map((slide, idx) => {
+      const isActive = idx === heroCurrentSlideIndex;
+      return `
+        <div 
+          class="hero-slide-item absolute inset-0 w-full h-full transition-all duration-700 ease-in-out ${isActive ? 'opacity-100 z-10 scale-100' : 'opacity-0 z-0 scale-105 pointer-events-none'}"
+          data-slide-index="${idx}"
+        >
+          <img 
+            src="${slide.url}" 
+            alt="${slide.caption || 'Drika Personal Chef'}" 
+            class="w-full h-full object-cover"
+            loading="${idx === 0 ? 'eager' : 'lazy'}"
+          />
+        </div>
+      `;
+    }).join("");
+
+    if (dotsContainer) {
+      if (slides.length <= 1) {
+        dotsContainer.classList.add("hidden");
+      } else {
+        dotsContainer.classList.remove("hidden");
+        dotsContainer.innerHTML = slides.map((_, idx) => `
+          <button 
+            type="button" 
+            onclick="window.drikaApp.goToHeroSlide(${idx})"
+            class="hero-dot ${idx === heroCurrentSlideIndex ? 'w-5 bg-amber-400' : 'w-2 bg-white/60 hover:bg-white'} h-2 rounded-full transition-all duration-300 cursor-pointer shadow-xs"
+            aria-label="Ir para foto ${idx + 1}"
+          ></button>
+        `).join("");
+      }
+    }
+
+    if (prevBtn && nextBtn) {
+      if (slides.length <= 1) {
+        prevBtn.classList.add("hidden");
+        nextBtn.classList.add("hidden");
+      } else {
+        prevBtn.classList.remove("hidden");
+        nextBtn.classList.remove("hidden");
+      }
+    }
+
+    updateHeroSlideInfo();
+
+    if (slides.length > 1 && !heroIsHovered) {
+      startHeroCarouselAutoplay();
+    } else {
+      stopHeroCarouselAutoplay();
+    }
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  function updateHeroSlideInfo() {
+    const slides = Array.isArray(currentSiteImages.heroCarousel) && currentSiteImages.heroCarousel.length > 0
+      ? currentSiteImages.heroCarousel
+      : [];
+    const activeSlide = slides[heroCurrentSlideIndex];
+    const subjectBadge = document.getElementById("hero-carousel-subject-badge");
+    const tagBadge = document.getElementById("hero-carousel-tag-badge");
+    const titleEl = document.getElementById("hero-carousel-title");
+    const subtitleEl = document.getElementById("hero-carousel-subtitle");
+
+    if (subjectBadge) {
+      subjectBadge.textContent = currentSiteImages.heroCarouselSubject || "Cozinha Afetiva & Natural";
+    }
+
+    if (activeSlide) {
+      if (titleEl) {
+        titleEl.textContent = activeSlide.caption || "Drika Personal Chef";
+      }
+      if (subtitleEl) {
+        subtitleEl.textContent = activeSlide.subtitle || "Cardápio Artesanal & Nutritivo • Direto da Horta";
+      }
+      if (tagBadge) {
+        if (activeSlide.tag) {
+          tagBadge.textContent = activeSlide.tag;
+          tagBadge.classList.remove("hidden");
+        } else {
+          tagBadge.classList.add("hidden");
+        }
+      }
+    }
+  }
+
+  function goToHeroSlide(newIndex) {
+    const slides = currentSiteImages.heroCarousel || [];
+    if (slides.length <= 1) return;
+
+    heroCurrentSlideIndex = (newIndex + slides.length) % slides.length;
+
+    const slideEls = document.querySelectorAll(".hero-slide-item");
+    slideEls.forEach((el, idx) => {
+      if (idx === heroCurrentSlideIndex) {
+        el.classList.remove("opacity-0", "z-0", "scale-105", "pointer-events-none");
+        el.classList.add("opacity-100", "z-10", "scale-100");
+      } else {
+        el.classList.remove("opacity-100", "z-10", "scale-100");
+        el.classList.add("opacity-0", "z-0", "scale-105", "pointer-events-none");
+      }
+    });
+
+    const dots = document.querySelectorAll(".hero-dot");
+    dots.forEach((dot, idx) => {
+      if (idx === heroCurrentSlideIndex) {
+        dot.className = "hero-dot w-5 h-2 rounded-full transition-all duration-300 cursor-pointer shadow-xs bg-amber-400";
+      } else {
+        dot.className = "hero-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer shadow-xs bg-white/60 hover:bg-white";
+      }
+    });
+
+    updateHeroSlideInfo();
+  }
+
+  function nextHeroSlide() {
+    const slides = currentSiteImages.heroCarousel || [];
+    if (slides.length <= 1) return;
+    goToHeroSlide(heroCurrentSlideIndex + 1);
+  }
+
+  function prevHeroSlide() {
+    const slides = currentSiteImages.heroCarousel || [];
+    if (slides.length <= 1) return;
+    goToHeroSlide(heroCurrentSlideIndex - 1);
+  }
+
+  function startHeroCarouselAutoplay() {
+    stopHeroCarouselAutoplay();
+    const interval = parseInt(currentSiteImages.heroCarouselInterval, 10) || 4000;
+    heroCarouselTimer = setInterval(() => {
+      nextHeroSlide();
+    }, interval);
+  }
+
+  function stopHeroCarouselAutoplay() {
+    if (heroCarouselTimer) {
+      clearInterval(heroCarouselTimer);
+      heroCarouselTimer = null;
     }
   }
 
@@ -1816,17 +2030,220 @@
               </div>
             </div>
 
-            <!-- Foto da Chef na Hero -->
-            <div class="p-4 rounded-2xl border border-stone-200 bg-stone-50 space-y-3">
-              <span class="text-xs font-bold text-stone-700 block">Foto da Chef (Topo/Hero)</span>
-              <div class="aspect-[4/3] rounded-xl overflow-hidden bg-white border border-stone-200">
-                <img src="${currentSiteImages.heroChef}" id="admin-site-hero-preview" class="w-full h-full object-cover" />
+            <!-- Foto e Carrossel da Chef (Topo / Hero) -->
+            <div class="p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/40 space-y-4 sm:col-span-2">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-200/70 pb-3">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs sm:text-sm font-bold text-earth-dark flex items-center gap-1.5">
+                      <i data-lucide="layout-template" class="w-4 h-4 text-earth-olive"></i>
+                      Foto e Carrossel da Chef (Topo / Hero)
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900">Página Principal</span>
+                  </div>
+                  <p class="text-xs text-stone-600 mt-1">
+                    Escolha se o banner principal da página inicial exibirá uma foto única ou um <strong>carrossel de fotos automático</strong> de determinado assunto.
+                  </p>
+                </div>
+                
+                <!-- Seletor de Modo: Carrossel vs Foto Única -->
+                <div class="inline-flex p-1 bg-white rounded-xl border border-stone-200 text-xs font-semibold self-start sm:self-auto">
+                  <button 
+                    type="button"
+                    onclick="window.drikaApp.setHeroMode('carousel')"
+                    class="px-3 py-1.5 rounded-lg transition ${currentSiteImages.heroMode !== 'single' ? 'bg-earth-olive text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'}"
+                  >
+                    🎠 Carrossel Automático
+                  </button>
+                  <button 
+                    type="button"
+                    onclick="window.drikaApp.setHeroMode('single')"
+                    class="px-3 py-1.5 rounded-lg transition ${currentSiteImages.heroMode === 'single' ? 'bg-earth-olive text-white shadow-xs' : 'text-stone-600 hover:text-stone-900'}"
+                  >
+                    🖼️ Foto Única
+                  </button>
+                </div>
               </div>
-              <label class="w-full cursor-pointer inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-white text-earth-olive border border-emerald-200 hover:bg-emerald-50 transition">
-                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-                <span>Enviar Nova Foto</span>
-                <input type="file" accept="image/*" class="hidden" onchange="window.drikaApp.handleSiteImageUpload(event, 'heroChef')" />
-              </label>
+
+              ${currentSiteImages.heroMode !== 'single' ? `
+                <!-- Configurações do Carrossel -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-xl border border-emerald-100">
+                  <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">
+                      📌 Assunto / Tema do Carrossel (Destaque do Topo)
+                    </label>
+                    <input 
+                      type="text" 
+                      id="admin-hero-carousel-subject"
+                      value="${currentSiteImages.heroCarouselSubject || 'Pratos Selecionados da Semana'}" 
+                      onchange="window.drikaApp.updateHeroCarouselSubject(this.value)"
+                      placeholder="Ex: Pratos da Semana, Marmitas Congeladas, Cozinha Afetiva..."
+                      class="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-stone-50 focus:bg-white"
+                    />
+                    <p class="text-[10px] text-stone-500 mt-1">Aparece no selo dourado da foto na página principal.</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">
+                      ⏱️ Transição Automática dos Slides
+                    </label>
+                    <select 
+                      onchange="window.drikaApp.updateHeroCarouselInterval(this.value)"
+                      class="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-stone-50 focus:bg-white"
+                    >
+                      <option value="3000" ${currentSiteImages.heroCarouselInterval == 3000 ? 'selected' : ''}>A cada 3 segundos (Mais Dinâmico)</option>
+                      <option value="4000" ${!currentSiteImages.heroCarouselInterval || currentSiteImages.heroCarouselInterval == 4000 ? 'selected' : ''}>A cada 4 segundos (Recomendado)</option>
+                      <option value="5000" ${currentSiteImages.heroCarouselInterval == 5000 ? 'selected' : ''}>A cada 5 segundos</option>
+                      <option value="6000" ${currentSiteImages.heroCarouselInterval == 6000 ? 'selected' : ''}>A cada 6 segundos (Mais Suave)</option>
+                    </select>
+                    <p class="text-[10px] text-stone-500 mt-1">O carrossel gira automaticamente e pausa ao passar o mouse.</p>
+                  </div>
+                </div>
+
+                <!-- Submissão de Fotos para o Carrossel -->
+                <div class="bg-white p-4 rounded-xl border border-emerald-200 space-y-3">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-xs font-bold text-earth-dark flex items-center gap-1.5">
+                      <i data-lucide="images" class="w-4 h-4 text-emerald-600"></i>
+                      Submeter Fotos para o Carrossel (Total: ${(currentSiteImages.heroCarousel || []).length} fotos ativas)
+                    </span>
+                    <button 
+                      type="button" 
+                      onclick="window.drikaApp.resetHeroCarouselToDefault()" 
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 transition flex items-center gap-1 cursor-pointer"
+                      title="Carrega as 9 fotos oficiais da pasta assets/carrossel"
+                    >
+                      <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                      <span>Carregar 9 Fotos de assets/carrossel</span>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <!-- Opção 1: Selecionar Fotos da Pasta -->
+                    <label class="flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-emerald-300 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 cursor-pointer transition text-center group bg-emerald-50/20">
+                      <i data-lucide="folder-up" class="w-6 h-6 text-emerald-600 group-hover:scale-110 transition-transform mb-1"></i>
+                      <span class="text-xs font-bold text-emerald-900">📁 Selecionar Fotos da Pasta</span>
+                      <span class="text-[10px] text-stone-500">Selecione fotos do computador para carregar de uma vez</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        multiple 
+                        class="hidden" 
+                        onchange="window.drikaApp.handleHeroBatchUpload(event)"
+                      />
+                    </label>
+
+                    <!-- Opção 2: Submeter Pasta Inteira de Fotos -->
+                    <label class="flex flex-col items-center justify-center p-3.5 border-2 border-dashed border-stone-300 rounded-xl hover:border-stone-500 hover:bg-stone-50 cursor-pointer transition text-center group bg-stone-50/40">
+                      <i data-lucide="folder-archive" class="w-6 h-6 text-earth-olive group-hover:scale-110 transition-transform mb-1"></i>
+                      <span class="text-xs font-bold text-stone-800">📂 Submeter Pasta Inteira</span>
+                      <span class="text-[10px] text-stone-500">Envia todas as fotos de uma pasta de assunto específico</span>
+                      <input 
+                        type="file" 
+                        webkitdirectory 
+                        directory 
+                        multiple 
+                        class="hidden" 
+                        onchange="window.drikaApp.handleHeroFolderUpload(event)"
+                      />
+                    </label>
+                  </div>
+
+                  <!-- Opção 3: Adicionar Foto por Caminho ou Link -->
+                  <div class="pt-2 border-t border-stone-100 flex flex-col sm:flex-row items-center gap-2">
+                    <input 
+                      type="text" 
+                      id="admin-hero-new-url"
+                      placeholder="Ou digite o caminho/link (ex: assets/1. lasanha de berinjela.jpg)" 
+                      class="flex-1 w-full px-3 py-1.5 text-xs rounded-lg border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                    />
+                    <input 
+                      type="text" 
+                      id="admin-hero-new-caption"
+                      placeholder="Legenda do prato (opcional)" 
+                      class="w-full sm:w-44 px-3 py-1.5 text-xs rounded-lg border border-stone-300 bg-stone-50 focus:bg-white focus:outline-hidden"
+                    />
+                    <button 
+                      type="button" 
+                      onclick="window.drikaApp.addHeroSlideByUrl()" 
+                      class="w-full sm:w-auto px-4 py-1.5 rounded-lg bg-earth-olive text-white text-xs font-bold hover:bg-earth-dark transition whitespace-nowrap"
+                    >
+                      ➕ Adicionar
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Lista e Grade das Fotos Atuais do Carrossel -->
+                <div class="space-y-2">
+                  <span class="text-xs font-bold text-stone-700 block">Fotos ativas no Carrossel da Página Inicial:</span>
+                  
+                  ${(!currentSiteImages.heroCarousel || currentSiteImages.heroCarousel.length === 0) ? `
+                    <div class="p-6 text-center bg-white rounded-xl border border-stone-200 text-stone-400 text-xs">
+                      Nenhuma foto cadastrada no carrossel. Use os botões acima para submeter fotos.
+                    </div>
+                  ` : `
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-80 overflow-y-auto p-1 bg-white rounded-xl border border-stone-200">
+                      ${currentSiteImages.heroCarousel.map((slide, idx) => `
+                        <div class="p-2 rounded-lg border border-stone-200 bg-stone-50 space-y-1.5 relative group">
+                          <div class="aspect-[4/3] rounded-md overflow-hidden bg-stone-200 relative">
+                            <img src="${slide.url}" alt="${slide.caption || 'Foto ' + (idx + 1)}" class="w-full h-full object-cover" />
+                            <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-black/60 text-white">#${idx + 1}</span>
+                          </div>
+                          <div>
+                            <input 
+                              type="text" 
+                              value="${slide.caption || ''}" 
+                              placeholder="Legenda da foto..."
+                              title="Altere a legenda e clique fora para salvar"
+                              onchange="window.drikaApp.updateHeroSlideCaption(${idx}, this.value)"
+                              class="w-full px-1.5 py-1 text-[11px] rounded border border-stone-300 focus:outline-hidden text-stone-800 bg-white"
+                            />
+                          </div>
+                          <div class="flex items-center justify-between pt-0.5">
+                            <button 
+                              type="button" 
+                              onclick="window.drikaApp.moveHeroSlideUp(${idx})" 
+                              class="p-1 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-200 text-[10px] ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}"
+                              title="Mover para esquerda"
+                            >
+                              ⬅️
+                            </button>
+                            <button 
+                              type="button" 
+                              onclick="window.drikaApp.removeHeroSlide(${idx})" 
+                              class="px-2 py-0.5 rounded bg-red-100 hover:bg-red-200 text-red-700 text-[10px] font-bold transition"
+                              title="Remover do carrossel"
+                            >
+                              🗑️ Excluir
+                            </button>
+                            <button 
+                              type="button" 
+                              onclick="window.drikaApp.moveHeroSlideDown(${idx})" 
+                              class="p-1 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-200 text-[10px] ${idx === (currentSiteImages.heroCarousel.length - 1) ? 'opacity-30 pointer-events-none' : ''}"
+                              title="Mover para direita"
+                            >
+                              ➡️
+                            </button>
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  `}
+                </div>
+              ` : `
+                <!-- Modo Foto Única -->
+                <div class="p-4 rounded-xl border border-stone-200 bg-white space-y-3 max-w-sm">
+                  <span class="text-xs font-bold text-stone-700 block">Preview da Foto Única no Topo:</span>
+                  <div class="aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+                    <img src="${currentSiteImages.heroChef || 'assets/CHEF.jpg'}" id="admin-site-hero-preview" class="w-full h-full object-cover" />
+                  </div>
+                  <label class="w-full cursor-pointer inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-white text-earth-olive border border-emerald-200 hover:bg-emerald-50 transition">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <span>Substituir Foto Única</span>
+                    <input type="file" accept="image/*" class="hidden" onchange="window.drikaApp.handleSiteImageUpload(event, 'heroChef')" />
+                  </label>
+                </div>
+              `}
             </div>
 
             <!-- Foto da Chef na Seção Sobre -->
@@ -2157,6 +2574,157 @@
     }
   }
 
+  // --- GERENCIAMENTO DO CARROSSEL HERO (PAINEL DA CHEF) ---
+  function setHeroMode(mode) {
+    currentSiteImages.heroMode = mode;
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast(mode === 'carousel' ? "🎠 Modo Carrossel Automático ativado no Topo!" : "🖼️ Modo Foto Única ativado no Topo!");
+  }
+
+  function updateHeroCarouselSubject(subject) {
+    currentSiteImages.heroCarouselSubject = (subject || "").trim() || "Pratos Selecionados da Semana";
+    saveSiteImages();
+    updateHeroSlideInfo();
+    showToast("Assunto do carrossel atualizado com sucesso! ✨");
+  }
+
+  function updateHeroCarouselInterval(val) {
+    const parsed = parseInt(val, 10) || 4000;
+    currentSiteImages.heroCarouselInterval = parsed;
+    saveSiteImages();
+    startHeroCarouselAutoplay();
+    showToast(`Tempo de transição ajustado para ${parsed / 1000}s! ⏱️`);
+  }
+
+  async function handleHeroBatchUpload(e) {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const imageFiles = files.filter(f => f.type.startsWith("image/") || /\.(jpe?g|png|webp|avif)$/i.test(f.name));
+    if (imageFiles.length === 0) {
+      alert("Nenhum arquivo de imagem válido foi selecionado. Por favor, envie arquivos JPG, PNG ou WebP.");
+      return;
+    }
+
+    showToast(`Processando ${imageFiles.length} foto(s) para o carrossel do topo... ⏳`);
+
+    if (!Array.isArray(currentSiteImages.heroCarousel)) {
+      currentSiteImages.heroCarousel = [];
+    }
+
+    let addedCount = 0;
+    for (const file of imageFiles) {
+      try {
+        const dataUrl = await processImageFile(file, 1000, 1000, 0.85);
+        // Formata legenda amigável removendo extensão e numerações iniciais
+        const rawName = file.name.replace(/\.[^/.]+$/, "").replace(/^\d+[\.\-\s_]*/, "").trim();
+        const caption = rawName ? (rawName.charAt(0).toUpperCase() + rawName.slice(1)) : "Prato Selecionado";
+        
+        currentSiteImages.heroCarousel.push({
+          url: dataUrl,
+          caption: caption,
+          tag: "Destaque"
+        });
+        addedCount++;
+      } catch (err) {
+        console.error("Erro ao comprimir imagem:", file.name, err);
+      }
+    }
+
+    currentSiteImages.heroMode = "carousel";
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast(`🎉 ${addedCount} foto(s) adicionadas com sucesso ao carrossel do topo!`);
+  }
+
+  async function handleHeroFolderUpload(e) {
+    await handleHeroBatchUpload(e);
+  }
+
+  function addHeroSlideByUrl() {
+    const urlInput = document.getElementById("admin-hero-new-url");
+    const captionInput = document.getElementById("admin-hero-new-caption");
+    if (!urlInput) return;
+
+    const url = urlInput.value.trim();
+    if (!url) {
+      alert("Por favor, digite o caminho da foto ou link.");
+      urlInput.focus();
+      return;
+    }
+
+    const caption = captionInput && captionInput.value.trim() ? captionInput.value.trim() : "Prato Selecionado";
+
+    if (!Array.isArray(currentSiteImages.heroCarousel)) {
+      currentSiteImages.heroCarousel = [];
+    }
+
+    currentSiteImages.heroCarousel.push({
+      url: url,
+      caption: caption,
+      tag: "Destaque"
+    });
+
+    currentSiteImages.heroMode = "carousel";
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast("Foto adicionada ao carrossel com sucesso! 🍲");
+  }
+
+  function updateHeroSlideCaption(idx, caption) {
+    if (currentSiteImages.heroCarousel && currentSiteImages.heroCarousel[idx]) {
+      currentSiteImages.heroCarousel[idx].caption = caption;
+      saveSiteImages();
+      updateHeroSlideInfo();
+    }
+  }
+
+  function removeHeroSlide(idx) {
+    if (!currentSiteImages.heroCarousel || !currentSiteImages.heroCarousel[idx]) return;
+    const confirmDel = confirm("Deseja realmente remover esta foto do carrossel?");
+    if (!confirmDel) return;
+
+    currentSiteImages.heroCarousel.splice(idx, 1);
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+    showToast("Foto removida do carrossel.");
+  }
+
+  function moveHeroSlideUp(idx) {
+    if (idx <= 0 || !currentSiteImages.heroCarousel) return;
+    const item = currentSiteImages.heroCarousel.splice(idx, 1)[0];
+    currentSiteImages.heroCarousel.splice(idx - 1, 0, item);
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+  }
+
+  function moveHeroSlideDown(idx) {
+    if (!currentSiteImages.heroCarousel || idx >= currentSiteImages.heroCarousel.length - 1) return;
+    const item = currentSiteImages.heroCarousel.splice(idx, 1)[0];
+    currentSiteImages.heroCarousel.splice(idx + 1, 0, item);
+    saveSiteImages();
+    renderSiteImages();
+    renderAdminContent();
+  }
+
+  function resetHeroCarouselToDefault() {
+    if (typeof DEFAULT_SITE_IMAGES !== 'undefined' && DEFAULT_SITE_IMAGES.heroCarousel) {
+      currentSiteImages.heroCarousel = JSON.parse(JSON.stringify(DEFAULT_SITE_IMAGES.heroCarousel));
+      currentSiteImages.heroMode = "carousel";
+      currentSiteImages.heroCarouselSubject = DEFAULT_SITE_IMAGES.heroCarouselSubject || "Pratos Selecionados da Semana";
+      saveSiteImages();
+      renderSiteImages();
+      renderAdminContent();
+      showToast("9 fotos oficiais de assets/carrossel carregadas com sucesso! 🍲");
+    }
+  }
+
   function exportDataAsJSON() {
     const exportObject = {
       menu: currentMenuData,
@@ -2365,6 +2933,20 @@
     previewNewDishImage,
     handleAddNewDish,
     handleSiteImageUpload,
+    setHeroMode,
+    updateHeroCarouselSubject,
+    updateHeroCarouselInterval,
+    handleHeroBatchUpload,
+    handleHeroFolderUpload,
+    addHeroSlideByUrl,
+    updateHeroSlideCaption,
+    removeHeroSlide,
+    moveHeroSlideUp,
+    moveHeroSlideDown,
+    nextHeroSlide,
+    prevHeroSlide,
+    goToHeroSlide,
+    resetHeroCarouselToDefault,
     handleSavePixSettings,
     handleChangePassword,
     exportDataAsJSON,
