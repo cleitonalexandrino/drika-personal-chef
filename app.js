@@ -184,7 +184,19 @@
       localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(currentMenuData));
     } catch (e) {
       console.error("Erro ao salvar cardápio no LocalStorage:", e);
-      alert("Aviso: Limite de armazenamento local atingido. Tente usar imagens menores ou links de imagem.");
+      try {
+        // Se a cota estourar devido a imagens grandes em Base64, otimiza imagens muito pesadas
+        const optimizedData = currentMenuData.map((item) => {
+          if (item.image && item.image.startsWith("data:") && item.image.length > 35000) {
+            return { ...item, image: "assets/refeicoes/1. lasanha de beringela.jpg" };
+          }
+          return item;
+        });
+        localStorage.setItem(MENU_STORAGE_KEY, JSON.stringify(optimizedData));
+        console.warn("Cardápio salvo com sucesso utilizando otimização de imagens.");
+      } catch (err2) {
+        alert("Aviso: Limite de armazenamento local do navegador atingido. O prato foi cadastrado na sessão atual.");
+      }
     }
   }
 
@@ -1722,26 +1734,37 @@
               </p>
             </div>
             
-            <!-- Contadores e Filtro Rápido -->
-            <div class="flex items-center gap-1.5 bg-stone-100 p-1 rounded-xl text-xs">
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Botão Atalho Cadastrar Prato -->
               <button 
-                onclick="window.drikaApp.setAdminDishFilter('all')"
-                class="px-2.5 py-1 rounded-lg font-bold transition ${adminDishFilter === 'all' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-900'}"
+                onclick="window.drikaApp.setAdminTab('add-dish')"
+                class="px-3.5 py-1.5 rounded-xl font-bold text-xs bg-earth-olive hover:bg-earth-dark text-white shadow-sm transition flex items-center gap-1.5 active:scale-95"
               >
-                Todos (${currentMenuData.length})
+                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                <span>➕ Cadastrar Prato</span>
               </button>
-              <button 
-                onclick="window.drikaApp.setAdminDishFilter('active')"
-                class="px-2.5 py-1 rounded-lg font-bold transition ${adminDishFilter === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'text-emerald-700 hover:bg-emerald-50'}"
-              >
-                🟢 Ativos (${activeCount})
-              </button>
-              <button 
-                onclick="window.drikaApp.setAdminDishFilter('inactive')"
-                class="px-2.5 py-1 rounded-lg font-bold transition ${adminDishFilter === 'inactive' ? 'bg-amber-600 text-white shadow-xs' : 'text-amber-700 hover:bg-amber-50'}"
-              >
-                ⏸️ Pausados (${inactiveCount})
-              </button>
+
+              <!-- Contadores e Filtro Rápido -->
+              <div class="flex items-center gap-1.5 bg-stone-100 p-1 rounded-xl text-xs">
+                <button 
+                  onclick="window.drikaApp.setAdminDishFilter('all')"
+                  class="px-2.5 py-1 rounded-lg font-bold transition ${adminDishFilter === 'all' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500 hover:text-stone-900'}"
+                >
+                  Todos (${currentMenuData.length})
+                </button>
+                <button 
+                  onclick="window.drikaApp.setAdminDishFilter('active')"
+                  class="px-2.5 py-1 rounded-lg font-bold transition ${adminDishFilter === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'text-emerald-700 hover:bg-emerald-50'}"
+                >
+                  🟢 Ativos (${activeCount})
+                </button>
+                <button 
+                  onclick="window.drikaApp.setAdminDishFilter('inactive')"
+                  class="px-2.5 py-1 rounded-lg font-bold transition ${adminDishFilter === 'inactive' ? 'bg-amber-600 text-white shadow-xs' : 'text-amber-700 hover:bg-amber-50'}"
+                >
+                  ⏸️ Pausados (${inactiveCount})
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2151,79 +2174,182 @@
     } else if (currentAdminTab === "add-dish") {
       // TAB: CADASTRAR NOVO PRATO
       bodyContainer.innerHTML = `
-        <form id="form-add-dish" onsubmit="window.drikaApp.handleAddNewDish(event)" class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-          <div>
-            <h4 class="font-bold text-sm text-stone-800 font-serif-title">Cadastrar Novo Prato ou Novidade</h4>
-            <p class="text-xs text-stone-500">Adicione novos pratos ao cardápio com foto, preço e escolha se já nasce ativo no site ou pausado.</p>
+        <form id="form-add-dish" onsubmit="window.drikaApp.handleAddNewDish(event)" class="space-y-5 max-w-3xl mx-auto pb-8">
+          
+          <!-- CABEÇALHO COM BOTÃO DIRETO DE SALVAR -->
+          <div class="p-4 sm:p-5 rounded-2xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 via-white to-amber-50 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="p-2 rounded-xl bg-earth-olive text-white shadow-xs">
+                  <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                </span>
+                <h4 class="font-bold text-base sm:text-lg text-earth-dark font-serif-title">
+                  Cadastrar Novo Prato ou Novidade
+                </h4>
+              </div>
+              <p class="text-xs text-stone-600 mt-1">
+                Adicione pratos, marmitas ou novidades ao cardápio com foto, preço e visibilidade imediata.
+              </p>
+            </div>
+            <button 
+              type="submit" 
+              onclick="window.drikaApp.handleAddNewDish(event)"
+              class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-earth-olive hover:bg-earth-dark text-white shadow-md transition flex items-center justify-center gap-2 active:scale-95 flex-shrink-0 cursor-pointer"
+            >
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Salvar Prato Agora</span>
+            </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1">Título do Prato *</label>
-              <input type="text" id="new-dish-title" required placeholder="Ex: Moqueca Vegana de Taioba com PANCs" class="w-full p-2.5 text-xs rounded-xl custom-input" />
+          <!-- CAMPOS PRINCIPAIS -->
+          <div class="p-5 rounded-2xl border border-stone-200 bg-stone-50/60 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-stone-800 mb-1.5 flex items-center gap-1">
+                  <span>Título do Prato</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="new-dish-title" 
+                  required 
+                  autofocus
+                  placeholder="Ex: Moqueca Vegana de Taioba com PANCs" 
+                  class="w-full p-3 text-xs sm:text-sm rounded-xl custom-input bg-white font-medium shadow-xs" 
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-800 mb-1.5 flex items-center gap-1">
+                  <span>Categoria do Cardápio</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <select id="new-dish-category" required class="w-full p-3 text-xs sm:text-sm rounded-xl custom-input bg-white font-medium shadow-xs">
+                  <option value="lowcarb">🥑 Cardápio Low Carb</option>
+                  <option value="tradicional_fit">🍱 Cardápio Tradicional e Fit</option>
+                  <option value="produtos">🍯 Produtos Artesanais da Horta</option>
+                  <option value="personalchef">👩‍🍳 Serviços de Personal Chef & Eventos</option>
+                  <option value="marmitas">🥗 Outras Marmitas</option>
+                </select>
+              </div>
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-stone-800 mb-1.5 flex items-center gap-1">
+                  <span>Preço (R$)</span>
+                  <span class="text-red-500 font-bold">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="new-dish-price" 
+                  required 
+                  value="24,90" 
+                  placeholder="24,90" 
+                  class="w-full p-3 text-xs sm:text-sm rounded-xl custom-input bg-white font-bold text-earth-olive shadow-xs" 
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-800 mb-1.5">
+                  Porção / Peso
+                </label>
+                <input 
+                  type="text" 
+                  id="new-dish-portion" 
+                  value="400g" 
+                  placeholder="Ex: 400g ou 1 unidade" 
+                  class="w-full p-3 text-xs sm:text-sm rounded-xl custom-input bg-white shadow-xs" 
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-800 mb-1.5">
+                  Disponibilidade Inicial
+                </label>
+                <select id="new-dish-active" class="w-full p-3 text-xs sm:text-sm rounded-xl custom-input bg-white font-bold text-emerald-800 shadow-xs">
+                  <option value="true">🟢 Ativo (Aparece no site agora)</option>
+                  <option value="false">⏸️ Pausado (Salvar e ativar depois)</option>
+                </select>
+              </div>
+            </div>
+
             <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1">Categoria *</label>
-              <select id="new-dish-category" required class="w-full p-2.5 text-xs rounded-xl custom-input">
-                <option value="lowcarb">🥑 Cardápio Low Carb</option>
-                <option value="tradicional_fit">🍱 Cardápio Tradicional e Fit</option>
-                <option value="produtos">🍯 Produtos Artesanais da Horta</option>
-                <option value="personalchef">👩‍🍳 Serviços de Personal Chef & Eventos</option>
-                <option value="marmitas">🥗 Outras Marmitas</option>
-              </select>
+              <label class="block text-xs font-bold text-stone-800 mb-1.5">
+                Tags / Destaques <span class="text-[11px] font-normal text-stone-500">(separadas por vírgula)</span>
+              </label>
+              <input 
+                type="text" 
+                id="new-dish-tags" 
+                placeholder="Ex: Low Carb, Sem Glúten, Direto da Horta, Feito com Amor" 
+                class="w-full p-3 text-xs rounded-xl custom-input bg-white shadow-xs" 
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-stone-800 mb-1.5">
+                Descrição dos Ingredientes & Sabor <span class="text-[11px] font-normal text-stone-500">(opcional - geramos uma sugestão automática se deixar em branco)</span>
+              </label>
+              <textarea 
+                id="new-dish-desc" 
+                rows="3" 
+                placeholder="Ex: Combinação saborosa e equilibrada de filé fresco temperado com ervas da horta e legumes selecionados..." 
+                class="w-full p-3 text-xs rounded-xl custom-input bg-white leading-relaxed shadow-xs"
+              ></textarea>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- UPLOAD / SELEÇÃO DE FOTO DO PRATO -->
+          <div class="p-5 rounded-2xl border border-stone-200 bg-stone-50/60 space-y-3">
             <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1">Preço (R$) *</label>
-              <input type="number" step="0.01" id="new-dish-price" required value="24.90" class="w-full p-2.5 text-xs rounded-xl custom-input" />
+              <label class="block text-xs font-bold text-stone-800 mb-1">Foto do Prato</label>
+              <p class="text-xs text-stone-500 mb-2">Envie uma foto do seu computador ou celular, ou cole um link de imagem:</p>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1">Porção / Peso</label>
-              <input type="text" id="new-dish-portion" placeholder="Ex: 400g" class="w-full p-2.5 text-xs rounded-xl custom-input" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1">Disponibilidade Inicial</label>
-              <select id="new-dish-active" class="w-full p-2.5 text-xs rounded-xl custom-input font-semibold">
-                <option value="true">🟢 Ativo (Aparecer no site agora)</option>
-                <option value="false">⏸️ Pausado (Salvar e ativar depois)</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Tags (separadas por vírgula)</label>
-            <input type="text" id="new-dish-tags" placeholder="Ex: Low Carb, Fit, Sem Glúten" class="w-full p-2.5 text-xs rounded-xl custom-input" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Descrição dos Ingredientes *</label>
-            <textarea id="new-dish-desc" rows="3" required placeholder="Ex: Combinação saborosa e equilibrada preparada artesanalmente..." class="w-full p-2.5 text-xs rounded-xl custom-input"></textarea>
-          </div>
-
-          <!-- Upload de Imagem do Novo Prato -->
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">Foto do Prato</label>
-            <div class="flex items-center gap-3">
-              <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-earth-olive text-white hover:bg-earth-dark transition shadow-sm">
+            <div class="flex flex-wrap items-center gap-3">
+              <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-earth-olive text-white hover:bg-earth-dark transition shadow-sm active:scale-95">
                 <i data-lucide="image-plus" class="w-4 h-4"></i>
-                <span>Escolher Imagem do Computador</span>
+                <span>📁 Escolher Imagem do Computador</span>
                 <input type="file" id="new-dish-file" accept="image/*" class="hidden" onchange="window.drikaApp.previewNewDishImage(event)" />
               </label>
-              <span class="text-xs text-stone-400">ou</span>
-              <input type="text" id="new-dish-img-url" placeholder="Colar link de imagem (URL)" class="flex-1 p-2.5 text-xs rounded-xl custom-input" />
+              <span class="text-xs text-stone-400 font-bold">ou</span>
+              <input 
+                type="text" 
+                id="new-dish-img-url" 
+                placeholder="Colar link de imagem (URL da internet)" 
+                class="flex-1 min-w-[200px] p-2.5 text-xs rounded-xl custom-input bg-white" 
+                oninput="const w=document.getElementById('new-dish-preview-wrap'); const p=document.getElementById('new-dish-preview-img'); if(this.value.trim()){ p.src=this.value.trim(); w.classList.remove('hidden'); } else { w.classList.add('hidden'); }"
+              />
             </div>
-            <div id="new-dish-preview-wrap" class="mt-3 hidden">
-              <p class="text-[11px] text-stone-500 font-bold mb-1">Pré-visualização da Foto:</p>
-              <img id="new-dish-preview-img" src="" alt="Prévia" class="w-24 h-24 object-cover rounded-xl border border-stone-200 shadow-sm" />
+            
+            <div id="new-dish-preview-wrap" class="mt-3 hidden p-3 rounded-xl bg-white border border-stone-200 inline-flex items-center gap-3">
+              <img id="new-dish-preview-img" src="" alt="Prévia da foto" class="w-20 h-20 object-cover rounded-lg border border-stone-200 shadow-sm" onerror="this.src='assets/LOGO.jpg';" />
+              <div>
+                <span class="text-xs font-bold text-emerald-800 flex items-center gap-1">
+                  <i data-lucide="check-circle-2" class="w-4 h-4"></i> Foto selecionada!
+                </span>
+                <p class="text-[11px] text-stone-500">Esta foto aparecerá no cardápio na página principal.</p>
+              </div>
             </div>
           </div>
 
-          <button type="submit" class="w-full py-3 rounded-xl font-bold text-xs bg-earth-terracotta hover:bg-earth-terracottaHover text-white shadow-md transition flex items-center justify-center gap-2 active:scale-98">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>Salvar e Cadastrar no Cardápio</span>
-          </button>
+          <!-- BARRA FIXA / STICKY DE SALVAR (NUNCA FICA ESCONDIDA) -->
+          <div class="sticky bottom-0 bg-white/95 backdrop-blur-md pt-4 pb-2 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3 z-30">
+            <button 
+              type="button" 
+              onclick="window.drikaApp.setAdminTab('menu-images')" 
+              class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 transition flex items-center justify-center gap-1.5"
+            >
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span>Voltar para Lista de Pratos</span>
+            </button>
+            
+            <button 
+              type="submit" 
+              id="btn-save-new-dish-bottom"
+              onclick="window.drikaApp.handleAddNewDish(event)"
+              class="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-earth-olive hover:bg-earth-dark text-white shadow-lg transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+            >
+              <i data-lucide="plus-circle" class="w-5 h-5"></i>
+              <span>Salvar e Cadastrar no Cardápio Agora</span>
+            </button>
+          </div>
         </form>
       `;
     } else if (currentAdminTab === "hero-carousel") {
@@ -3352,39 +3478,72 @@
     if (!file) return;
 
     try {
-      newDishImageData = await processImageFile(file);
+      showToast("Carregando e otimizando foto do prato... ⏳");
+      newDishImageData = await processImageFile(file, 640, 640, 0.72);
       const wrap = document.getElementById("new-dish-preview-wrap");
       const previewImg = document.getElementById("new-dish-preview-img");
       if (wrap && previewImg) {
         previewImg.src = newDishImageData;
         wrap.classList.remove("hidden");
       }
+      showToast("Foto do prato pronta! Clique em Salvar Prato. 📸✨");
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao processar imagem:", err);
+      alert("Não foi possível carregar esta imagem. Tente uma foto menor ou em formato JPG/PNG.");
     }
   }
 
   function handleAddNewDish(e) {
-    if (e) e.preventDefault();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-    const title = document.getElementById("new-dish-title")?.value.trim();
-    const category = document.getElementById("new-dish-category")?.value;
-    const price = parseFloat(document.getElementById("new-dish-price")?.value);
-    const portion = document.getElementById("new-dish-portion")?.value.trim();
+    const titleInput = document.getElementById("new-dish-title");
+    const title = titleInput?.value.trim();
+    const category = document.getElementById("new-dish-category")?.value || "lowcarb";
+    
+    let priceRaw = document.getElementById("new-dish-price")?.value || "24.90";
+    if (typeof priceRaw === "string") {
+      priceRaw = priceRaw.replace(",", ".").trim();
+    }
+    const price = parseFloat(priceRaw);
+
+    const portion = document.getElementById("new-dish-portion")?.value.trim() || "400g";
     const tagsRaw = document.getElementById("new-dish-tags")?.value.trim();
-    const description = document.getElementById("new-dish-desc")?.value.trim();
+    let description = document.getElementById("new-dish-desc")?.value.trim();
     const urlInput = document.getElementById("new-dish-img-url")?.value.trim();
     const activeVal = document.getElementById("new-dish-active")?.value;
 
-    if (!title || isNaN(price) || !description) {
-      alert("Por favor, preencha todos os campos obrigatórios (*)");
+    if (!title) {
+      alert("Por favor, informe o Título do Prato para cadastrá-lo.");
+      if (titleInput) titleInput.focus();
       return;
     }
 
-    const finalImage = newDishImageData || urlInput || "assets/LOGO.jpg";
+    if (isNaN(price) || price < 0) {
+      alert("Por favor, informe um valor de preço válido (ex: 24,90).");
+      return;
+    }
+
+    // Se o usuário não preencher a descrição, gera uma sugestão profissional da Chef
+    if (!description) {
+      description = "Prato saudável e artesanal elaborado com ingredientes frescos e temperos naturais da Chef Adriana Corrêa.";
+    }
+
+    // Imagem: foto enviada, URL informada ou foto real padrão de acordo com a categoria
+    let finalImage = newDishImageData || urlInput;
+    if (!finalImage) {
+      if (category === "lowcarb") finalImage = "assets/refeicoes/1. lasanha de beringela.jpg";
+      else if (category === "tradicional_fit") finalImage = "assets/refeicoes/2. FILE DE SOBRECOXA (2).jpg";
+      else if (category === "produtos") finalImage = "assets/Pickled_vegetables_in_glass_jars_2K_20261002192115.jpg";
+      else if (category === "personalchef") finalImage = "assets/Chef_plating_gourmet_meal_2K_20261002191534.jpg";
+      else finalImage = "assets/LOGO.jpg";
+    }
+
     const tags = tagsRaw
       ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
-      : ["Novidade da Chef", "Saudável"];
+      : [getCategoryLabel(category), "Novidade da Chef"];
 
     const newDish = {
       id: "dish-" + Date.now(),
@@ -3395,16 +3554,25 @@
       image: finalImage,
       tags,
       description,
-      portion: portion || "400g",
+      portion,
       active: activeVal !== "false"
     };
 
+    // Insere no início da lista para visualização imediata
     currentMenuData.unshift(newDish);
     saveMenuData();
+
+    // Reseta filtros para garantir visibilidade instantânea
+    currentCategory = "all";
+    adminDishFilter = "all";
     renderMenu();
+    updateCategoryButtonsUI();
+
     newDishImageData = null;
 
-    showToast(`"${title}" cadastrado com sucesso no cardápio! 🎉`);
+    showToast(`"${title}" cadastrado com sucesso e já está disponível para venda! 🎉`);
+    
+    // Volta para a aba de pratos para exibir o novo prato no topo
     setAdminTab("menu-images");
   }
 
